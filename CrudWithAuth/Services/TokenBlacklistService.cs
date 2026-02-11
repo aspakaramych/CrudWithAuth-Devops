@@ -13,11 +13,19 @@ public class TokenBlacklistService : ITokenBlacklistService
     
     public async Task BlacklistTokenAsync(string token, TimeSpan expiry)
     {
-        throw new NotImplementedException();
+        var options = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = expiry
+        };
+        
+        await _cache.SetStringAsync(GetCacheKey(token), "revoked", options);
     }
 
     public async Task<bool> IsTokenBlacklistedAsync(string token)
     {
-        throw new NotImplementedException();
+        var cachedValue = await _cache.GetStringAsync(GetCacheKey(token));
+        return cachedValue != null;
     }
+    
+    private string GetCacheKey(string token) => $"blacklist:{token}";
 }
