@@ -1,4 +1,5 @@
 using CrudWithAuth.Data;
+using CrudWithAuth.Middleware;
 using CrudWithAuth.Repository;
 using CrudWithAuth.Services;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserServices>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenBlacklistService, TokenBlacklistService>();
 builder.Services.AddOpenApi();
 
@@ -28,6 +30,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<TokenValidationMiddleware>();
 
 app.UseAuthorization();
 

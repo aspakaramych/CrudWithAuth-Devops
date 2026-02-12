@@ -21,8 +21,7 @@ public class UserServices : IUserService
         {
             Id = u.Id,
             Email = u.Email,
-            Name = u.Name,
-            Password = u.Password
+            Name = u.Name
         });
         return response;
     }
@@ -36,8 +35,7 @@ public class UserServices : IUserService
         {
             Id = user.Id,
             Email = user.Email,
-            Name = user.Name,
-            Password = user.Password
+            Name = user.Name
         };
         return response;
     }
@@ -82,8 +80,7 @@ public class UserServices : IUserService
         {
             Id = userEntity.Id,
             Name = userEntity.Name,
-            Email = userEntity.Email,
-            Password = userEntity.Password
+            Email = userEntity.Email
         };
         return response;
     }
