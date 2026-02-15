@@ -17,7 +17,7 @@ jobs:
       - name: Restore dependencies main application
         run: dotnet restore CrudWithAuth/CrudWithAuth.csproj
       - name: Restore dependencies test application
-        run: dotent restore CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
+        run: dotnet restore CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
   
   linting:
     needs: restore
