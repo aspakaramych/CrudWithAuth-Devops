@@ -49,7 +49,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Publish application
-        run: dotnet publish CrudWithAuth/CrudWithAuth.csproj -c Release -o ./out --no-restore
+        run: |
+          dotnet restore CrudWithAuth/CrudWithAuth.csproj
+          dotnet publish CrudWithAuth/CrudWithAuth.csproj -c Release -o ./out --no-restore
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
