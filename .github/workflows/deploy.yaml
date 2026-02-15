@@ -15,9 +15,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Restore dependencies main application
-        run: dotnet restore CrudWithAuth/CrudWithAuth/CrudWithAuth.csproj
+        run: dotnet restore CrudWithAuth/CrudWithAuth.csproj
       - name: Restore dependencies test application
-        run: dotent restore CrudWithAuth/CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
+        run: dotent restore CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
   
   linting:
     needs: restore
@@ -28,7 +28,7 @@ jobs:
       - name: Check linting
         run: |
           echo "[]" > lint-report.json
-          dotnet format CrudWithAuth/CrudWithAuth/CrudWithAuth.csproj --verify-no-changes --no-restore --report lint-report.json
+          dotnet format CrudWithAuth/CrudWithAuth.csproj --verify-no-changes --no-restore --report lint-report.json
       - name: Upload Lint report
         uses: actions/upload-artifact@v4
         if: always()
@@ -44,7 +44,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Testing
         run: |
-          dotnet test CrudWithAuth/CrudWithAuth.Tests/CrudWithAuth.Tests.csproj --no-restore --logger "trx;LogFileName=test-results.trx"
+          dotnet test CrudWithAuth.Tests/CrudWithAuth.Tests.csproj --no-restore --logger "trx;LogFileName=test-results.trx"
       - name: Upload Test report
         uses: actions/upload-artifact@v4
         if: always()
@@ -59,7 +59,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Publish application
-        run: dotent publish CrudWithAuth/CrudWithAuth/CrudWithAuth.csproj -c Release -o ./out --no-restore
+        run: dotent publish CrudWithAuth/CrudWithAuth.csproj -c Release -o ./out --no-restore
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -68,5 +68,5 @@ jobs:
           path: ./out/
           retention-days: 1
   
-  
+
 
