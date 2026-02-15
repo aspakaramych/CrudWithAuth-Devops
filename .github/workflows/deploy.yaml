@@ -9,9 +9,7 @@ on:
       - master
 
 jobs:
-  
   linting:
-    needs: restore
     runs-on: self-hosted
     steps:
       - name: Checkout code
@@ -29,7 +27,6 @@ jobs:
           path: lint-report.json
   
   test:
-    needs: restore
     runs-on: self-hosted
     steps:
       - name: Checkout code
