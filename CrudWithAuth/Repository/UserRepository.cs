@@ -7,12 +7,12 @@ namespace CrudWithAuth.Repository;
 public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _dbContext;
-    
+
     public UserRepository(AppDbContext dbContext)
     {
         _dbContext = dbContext;
     }
-    
+
     public async Task<IEnumerable<User>> GetAllUsers()
     {
         return await _dbContext.Users.ToListAsync();

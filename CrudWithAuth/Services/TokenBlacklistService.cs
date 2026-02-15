@@ -10,14 +10,14 @@ public class TokenBlacklistService : ITokenBlacklistService
     {
         _cache = cache;
     }
-    
+
     public async Task BlacklistTokenAsync(string token, TimeSpan expiry)
     {
         var options = new DistributedCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = expiry
         };
-        
+
         await _cache.SetStringAsync(GetCacheKey(token), "revoked", options);
     }
 
@@ -26,6 +26,6 @@ public class TokenBlacklistService : ITokenBlacklistService
         var cachedValue = await _cache.GetStringAsync(GetCacheKey(token));
         return cachedValue != null;
     }
-    
+
     private string GetCacheKey(string token) => $"blacklist:{token}";
 }

@@ -7,16 +7,16 @@ namespace CrudWithAuth.Services;
 
 public class UserServices : IUserService
 {
-    private readonly IUserRepository  _userRepository;
+    private readonly IUserRepository _userRepository;
 
     public UserServices(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }
-    
+
     public async Task<IEnumerable<UserResponse>> GetAllUsers()
     {
-        var users =  await _userRepository.GetAllUsers();
+        var users = await _userRepository.GetAllUsers();
         var response = users.Select(u => new UserResponse
         {
             Id = u.Id,
@@ -28,7 +28,7 @@ public class UserServices : IUserService
 
     public async Task<UserResponse?> GetUserById(Guid id)
     {
-        var user =  await _userRepository.GetUserById(id);
+        var user = await _userRepository.GetUserById(id);
         if (user == null)
             throw new NotFoundException("User not found");
         var response = new UserResponse
@@ -65,7 +65,7 @@ public class UserServices : IUserService
 
     public async Task DeleteUser(Guid id)
     {
-        var  userEntity = await _userRepository.GetUserById(id);
+        var userEntity = await _userRepository.GetUserById(id);
         if (userEntity == null)
             throw new NotFoundException("User not found");
         await _userRepository.DeleteUser(userEntity);
