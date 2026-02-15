@@ -16,8 +16,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Restore dependencies main application
         run: dotnet restore CrudWithAuth/CrudWithAuth.csproj
-      - name: Restore dependencies test application
-        run: dotnet restore CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
   
   linting:
     needs: restore
@@ -44,7 +42,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Testing
         run: |
-          dotnet test CrudWithAuth.Tests/CrudWithAuth.Tests.csproj --no-restore --logger "trx;LogFileName=test-results.trx"
+          dotnet restore CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
+          dotnet test CrudWithAuth.Tests/CrudWithAuth.Tests.csproj --logger "trx;LogFileName=test-results.trx"
       - name: Upload Test report
         uses: actions/upload-artifact@v4
         if: always()
