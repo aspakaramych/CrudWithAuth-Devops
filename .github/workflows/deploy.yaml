@@ -90,8 +90,11 @@ jobs:
         run: |
           sudo cp -r ./out/* /var/www/crudwithauth/
           sudo chown -R www-data:www-data /var/www/crudwithauth/
+          sudo chmod +x /var/www/crudwithauth/CrudWithAuth.dll
           sudo systemctl restart application
           sudo systemctl is-active application
+          sudo systemctl is-active application || (sudo journalctl -u application -n 20 && exit 1)
+
 
   
 
