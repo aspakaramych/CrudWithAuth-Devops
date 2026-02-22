@@ -31,6 +31,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Config for test
+        run: |
+          echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth/appsettings.json
       - name: Testing
         run: |
           dotnet restore CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
