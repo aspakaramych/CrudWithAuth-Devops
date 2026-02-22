@@ -81,7 +81,7 @@ jobs:
           path: ./out
       - name: Create appsettings
         run: |
-          echo '{{ secrets.APP_SETTINGS_JSON }}' > appsettings.json
+          echo '${{ secrets.APP_SETTINGS_JSON }}' > appsettings.json
           sudo cp appsettings.json /var/www/crudwithauth
           sudo chown www-data:www-data /var/www/crudwithauth/appsettings.json
           sudo chmod 600 /var/www/crudwithauth/appsettings.json
