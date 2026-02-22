@@ -88,7 +88,7 @@ jobs:
       
       - name: Start service
         run: |
-          sudo cp -r ./out/* /var/www/crudwithauth/
+          sudo cp -r ./out/CrudWithAuth.dll /var/www/crudwithauth/
           sudo chown -R www-data:www-data /var/www/crudwithauth/
           sudo chmod +x /var/www/crudwithauth/CrudWithAuth.dll
           sudo systemctl daemon-reload
