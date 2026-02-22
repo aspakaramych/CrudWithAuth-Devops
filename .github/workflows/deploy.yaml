@@ -59,6 +59,27 @@ jobs:
           name: app-release
           path: ./out/
           retention-days: 1
+
+  deploy:
+    needs: ["publish"]
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Create appsettings
+        run: |
+          echo '{{ secrets.APP_SETTINGS_JSON }}' > appsettings.json
+          sudo cp appsettings.json /var/www/crudwithauth
+          sudo chown www-data:www-data /var/www/crudwithauth/appsettings.json
+          sudo chmod 600 /var/www/crudwithauth/appsettings.json
+      
+      - name: Start service
+        run: |
+          sudo cp -r ./out/* /var/www/crudwithauth/
+          sudo chown -R www-data:www-data /var/www/crudwithauth/
+          sudo systemctl restart application
+          sudo systemctl is-active application
+
   
 
 

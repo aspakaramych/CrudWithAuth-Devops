@@ -32,7 +32,8 @@ public class AuthControllerTests
         };
         var authResponse = new AuthResponse
         {
-            Token = "test-token",
+            AccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test",
+            RefreshToken = "refresh-token-base64",
             User = new UserResponse
             {
                 Id = Guid.NewGuid(),
@@ -46,7 +47,8 @@ public class AuthControllerTests
 
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedResponse = okResult.Value.Should().BeOfType<AuthResponse>().Subject;
-        returnedResponse.Token.Should().Be("test-token");
+        returnedResponse.AccessToken.Should().Be(authResponse.AccessToken);
+        returnedResponse.RefreshToken.Should().Be(authResponse.RefreshToken);
         returnedResponse.User.Email.Should().Be("newuser@test.com");
     }
 
@@ -70,20 +72,12 @@ public class AuthControllerTests
     [Fact]
     public async Task Login_WithValidCredentials_ShouldReturnOkWithAuthResponse()
     {
-        var loginRequest = new LoginRequest
-        {
-            Email = "user@test.com",
-            Password = "password123"
-        };
+        var loginRequest = new LoginRequest { Email = "user@test.com", Password = "password123" };
         var authResponse = new AuthResponse
         {
-            Token = "test-token",
-            User = new UserResponse
-            {
-                Id = Guid.NewGuid(),
-                Name = "Test User",
-                Email = "user@test.com"
-            }
+            AccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test",
+            RefreshToken = "refresh-token-base64",
+            User = new UserResponse { Id = Guid.NewGuid(), Name = "Test User", Email = "user@test.com" }
         };
         _authServiceMock.Setup(x => x.LoginAsync(loginRequest)).ReturnsAsync(authResponse);
 
@@ -91,17 +85,14 @@ public class AuthControllerTests
 
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedResponse = okResult.Value.Should().BeOfType<AuthResponse>().Subject;
-        returnedResponse.Token.Should().Be("test-token");
+        returnedResponse.AccessToken.Should().Be(authResponse.AccessToken);
+        returnedResponse.RefreshToken.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
     public async Task Login_WithInvalidCredentials_ShouldReturnBadRequest()
     {
-        var loginRequest = new LoginRequest
-        {
-            Email = "user@test.com",
-            Password = "wrongpassword"
-        };
+        var loginRequest = new LoginRequest { Email = "user@test.com", Password = "wrongpassword" };
         _authServiceMock.Setup(x => x.LoginAsync(loginRequest))
             .ThrowsAsync(new NotFoundException("Invalid email or password"));
 
@@ -113,7 +104,7 @@ public class AuthControllerTests
     [Fact]
     public async Task Logout_WithValidToken_ShouldReturnOk()
     {
-        var token = "test-token";
+        var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-jwt";
         _controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext()

@@ -1,47 +1,65 @@
-using System.Text;
 using CrudWithAuth.Services;
 using FluentAssertions;
-using Microsoft.Extensions.Caching.Distributed;
 using Moq;
+using StackExchange.Redis;
 using Xunit;
 
 namespace CrudWithAuth.Tests.Services;
 
 public class TokenBlacklistServiceTests
 {
-    private readonly Mock<IDistributedCache> _cacheMock;
+    private readonly Mock<IConnectionMultiplexer> _multiplexerMock;
+    private readonly Mock<IDatabase> _dbMock;
     private readonly TokenBlacklistService _service;
 
     public TokenBlacklistServiceTests()
     {
-        _cacheMock = new Mock<IDistributedCache>();
-        _service = new TokenBlacklistService(_cacheMock.Object);
+        _multiplexerMock = new Mock<IConnectionMultiplexer>();
+        _dbMock = new Mock<IDatabase>();
+
+        _multiplexerMock
+            .Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object>()))
+            .Returns(_dbMock.Object);
+
+        _service = new TokenBlacklistService(_multiplexerMock.Object);
     }
 
     [Fact]
-    public async Task BlacklistTokenAsync_ShouldStoreTokenInCache()
+    public async Task BlacklistTokenAsync_ShouldStoreTokenInRedis()
     {
-        var token = "test-token-123";
-        var expiry = TimeSpan.FromHours(24);
+        var token = "test-jwt-token";
+        var expiry = TimeSpan.FromHours(1);
+
+        _dbMock
+            .Setup(x => x.StringSetAsync(
+                $"blacklist:{token}",
+                "revoked",
+                expiry,
+                It.IsAny<bool>(),
+                It.IsAny<When>(),
+                It.IsAny<CommandFlags>()))
+            .ReturnsAsync(true);
 
         await _service.BlacklistTokenAsync(token, expiry);
 
-        _cacheMock.Verify(x => x.SetAsync(
-            "blacklist:test-token-123",
-            It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "revoked"),
-            It.Is<DistributedCacheEntryOptions>(opts => 
-                opts.AbsoluteExpirationRelativeToNow == expiry),
-            default
+        _dbMock.Verify(x => x.StringSetAsync(
+            $"blacklist:{token}",
+            "revoked",
+            expiry,
+            It.IsAny<bool>(),
+            It.IsAny<When>(),
+            CommandFlags.DemandMaster
         ), Times.Once);
     }
 
     [Fact]
     public async Task IsTokenBlacklistedAsync_WhenTokenIsBlacklisted_ShouldReturnTrue()
     {
-        var token = "blacklisted-token";
-        var cachedValue = Encoding.UTF8.GetBytes("revoked");
-        _cacheMock.Setup(x => x.GetAsync("blacklist:blacklisted-token", default))
-            .ReturnsAsync(cachedValue);
+        var token = "blacklisted-jwt-token";
+
+        _dbMock
+            .Setup(x => x.StringGetAsync($"blacklist:{token}", It.IsAny<CommandFlags>()))
+            .ReturnsAsync(new RedisValue("revoked"));
 
         var result = await _service.IsTokenBlacklistedAsync(token);
 
@@ -51,12 +69,59 @@ public class TokenBlacklistServiceTests
     [Fact]
     public async Task IsTokenBlacklistedAsync_WhenTokenIsNotBlacklisted_ShouldReturnFalse()
     {
-        var token = "valid-token";
-        _cacheMock.Setup(x => x.GetAsync("blacklist:valid-token", default))
-            .ReturnsAsync((byte[]?)null);
+        var token = "valid-jwt-token";
+
+        _dbMock
+            .Setup(x => x.StringGetAsync($"blacklist:{token}", It.IsAny<CommandFlags>()))
+            .ReturnsAsync(RedisValue.Null);
 
         var result = await _service.IsTokenBlacklistedAsync(token);
 
         result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task BlacklistTokenAsync_ShouldUseDemandMasterFlag()
+    {
+        var token = "token-for-flag-test";
+        var expiry = TimeSpan.FromMinutes(30);
+
+        _dbMock
+            .Setup(x => x.StringSetAsync(
+                It.IsAny<RedisKey>(),
+                It.IsAny<RedisValue>(),
+                It.IsAny<TimeSpan?>(),
+                It.IsAny<bool>(),
+                It.IsAny<When>(),
+                It.IsAny<CommandFlags>()))
+            .ReturnsAsync(true);
+
+        await _service.BlacklistTokenAsync(token, expiry);
+
+        _dbMock.Verify(x => x.StringSetAsync(
+            It.IsAny<RedisKey>(),
+            It.IsAny<RedisValue>(),
+            It.IsAny<TimeSpan?>(),
+            It.IsAny<bool>(),
+            It.IsAny<When>(),
+            CommandFlags.DemandMaster
+        ), Times.Once);
+    }
+
+    [Fact]
+    public async Task IsTokenBlacklistedAsync_ShouldUsePreferReplicaFlag()
+    {
+        var token = "token-for-replica-test";
+
+        _dbMock
+            .Setup(x => x.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(RedisValue.Null);
+
+        await _service.IsTokenBlacklistedAsync(token);
+
+        _dbMock.Verify(x => x.StringGetAsync(
+            It.IsAny<RedisKey>(),
+            CommandFlags.PreferReplica
+        ), Times.Once);
     }
 }
