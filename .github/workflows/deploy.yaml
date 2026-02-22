@@ -58,6 +58,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Publish application
         run: |
+          dotnet clean CrudWithAuth/CrudWithAuth.csproj
           dotnet restore CrudWithAuth/CrudWithAuth.csproj
           dotnet publish CrudWithAuth/CrudWithAuth.csproj -c Release -o ./out --no-restore
       
