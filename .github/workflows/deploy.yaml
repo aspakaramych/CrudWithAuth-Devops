@@ -35,6 +35,10 @@ jobs:
         run: |
           echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth/appsettings.json
           echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth.Tests/appsettings.json
+          mkdir -p ./CrudWithAuth/bin/Debug/net9.0/
+          mkdir -p ./CrudWithAuth.Tests/bin/Debug/net9.0/
+          echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth/bin/Debug/net9.0/appsettings.json
+          echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth.Tests/bin/Debug/net9.0/appsettings.json
       - name: Testing
         run: |
           dotnet restore CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
