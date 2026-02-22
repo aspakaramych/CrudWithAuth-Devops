@@ -34,6 +34,7 @@ jobs:
       - name: Config for test
         run: |
           echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth/appsettings.json
+          echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth.Tests/appsettings.json
       - name: Testing
         run: |
           dotnet restore CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
