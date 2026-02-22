@@ -18,6 +18,7 @@ public class JwtService : IJwtService
     public JwtService(IOptions<JwtSettings> jwtSettings)
     {
         _jwtSettings = jwtSettings.Value;
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         _tokenHandler = new JwtSecurityTokenHandler();
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
