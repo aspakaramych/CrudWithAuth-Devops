@@ -93,7 +93,7 @@ jobs:
           sudo chmod +x /var/www/crudwithauth/CrudWithAuth.dll
           sudo systemctl daemon-reload
           sudo systemctl restart application
-          sudo systemctl is-active application
+          sleep 5
           sudo systemctl is-active application || (sudo journalctl -u application -n 20 && exit 1)
 
 
