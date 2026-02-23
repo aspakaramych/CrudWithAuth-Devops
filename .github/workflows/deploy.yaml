@@ -79,18 +79,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-release
-          path: ./out
+          path: ./out      
+      - name: Start service
+        run: |
+          sudo cp -r ./out/. /var/www/crudwithauth/
+          sudo chown -R www-data:www-data /var/www/crudwithauth/
+          
       - name: Create appsettings
         run: |
           echo '${{ secrets.APP_SETTINGS_JSON }}' > appsettings.json
           sudo cp appsettings.json /var/www/crudwithauth
           sudo chown www-data:www-data /var/www/crudwithauth/appsettings.json
           sudo chmod 600 /var/www/crudwithauth/appsettings.json
-      
-      - name: Start service
+      - name: Run service
         run: |
-          sudo cp -r ./out/. /var/www/crudwithauth/
-          sudo chown -R www-data:www-data /var/www/crudwithauth/
           sudo chmod +x /var/www/crudwithauth/CrudWithAuth.dll
           sudo systemctl daemon-reload
           sudo systemctl restart application
