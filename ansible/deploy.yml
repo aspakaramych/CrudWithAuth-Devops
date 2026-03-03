@@ -84,22 +84,22 @@
       ignore_errors: yes
       changed_when: false
 
-    - name: Reset Redis nodes before cluster creation
-      shell: "redis-cli -p {{ item }} cluster reset hard"
+    - name: Reset Redis nodes to clean state
+      shell: "redis-cli -p {{ item }} flushall && redis-cli -p {{ item }} cluster reset hard"
       loop: "{{ redis_ports }}"
       changed_when: false
-      ignore_errors: yes
+      
 
     - name: Create Redis Cluster
       shell: >
-        echo "yes" | redis-cli --cluster create
+        redis-cli --cluster create
         {% for p in redis_ports %} 127.0.0.1:{{ p }} {% endfor %}
         --cluster-replicas 1 --cluster-yes
-      register: cluster_init
-      until: "'OK' in cluster_init.stdout or 'already in cluster' in cluster_init.stderr"
-      retries: 3
-      delay: 5
-      when: "'cluster_state:ok' not in redis_cluster_check.stdout"
+      register: cluster_result
+      failed_when: 
+        - cluster_result.rc != 0
+        - "'already in cluster' not in cluster_result.stderr"
+        - "'Node 127.0.0.1:7000 is not empty' not in cluster_result.stderr"
       
     - name: Ensure app directory exists
       file: 
