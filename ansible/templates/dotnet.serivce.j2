@@ -1,0 +1,12 @@
+[Unit]
+Description=CrudWithAuth
+After=network.target postgresql.service
+
+[Service]
+WorkingDirectory={{ app_dir }}
+ExecStart={{ dotnet_path }} {{ app_dir }}/CrudWithAuth
+Restart=on-failure
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=crudwithauth-dotnet
+User={{ app_user }}

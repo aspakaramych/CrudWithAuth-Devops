@@ -9,97 +9,25 @@ on:
       - master
 
 jobs:
-  linting:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Check linting
-        run: |
-          dotnet restore CrudWithAuth/CrudWithAuth.csproj
-          echo "[]" > lint-report.json
-          dotnet format CrudWithAuth/CrudWithAuth.csproj --verify-no-changes --no-restore --report lint-report.json
-      - name: Upload Lint report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with: 
-          name: lint-report
-          path: lint-report.json
-  
-  test:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Config for test
-        run: |
-          echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth/appsettings.json
-          echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth.Tests/appsettings.json
-          mkdir -p ./CrudWithAuth/bin/Debug/net9.0/
-          mkdir -p ./CrudWithAuth.Tests/bin/Debug/net9.0/
-          echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth/bin/Debug/net9.0/appsettings.json
-          echo '${{ secrets.APP_SETTINGS_JSON }}' > ./CrudWithAuth.Tests/bin/Debug/net9.0/appsettings.json
-      - name: Testing
-        run: |
-          dotnet restore CrudWithAuth.Tests/CrudWithAuth.Tests.csproj
-          dotnet test CrudWithAuth.Tests/CrudWithAuth.Tests.csproj --logger "trx;LogFileName=test-results.trx"
-      - name: Upload Test report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: dotnet-test-results
-          path: "**/*.trx"
-  
-  publish:
-    needs: ["linting", "test"]
-    runs-on: self-hosted
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Publish application
-        run: |
-          dotnet clean CrudWithAuth/CrudWithAuth.csproj
-          dotnet restore CrudWithAuth/CrudWithAuth.csproj
-          dotnet publish CrudWithAuth/CrudWithAuth.csproj -c Release -o ./out --no-restore
-      
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release
-          path: ./out/
-          retention-days: 1
-
   deploy:
     needs: ["publish"]
     runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: app-release
-          path: ./out      
-      - name: Start service
+          path: ./out 
+
+      - name: Run Ansible
         run: |
-          sudo cp -r ./out/. /var/www/crudwithauth/
-          sudo chown -R www-data:www-data /var/www/crudwithauth/
-          
-      - name: Create appsettings
-        run: |
-          echo '${{ secrets.APP_SETTINGS_JSON }}' > appsettings.json
-          sudo cp appsettings.json /var/www/crudwithauth
-          sudo chown www-data:www-data /var/www/crudwithauth/appsettings.json
-          sudo chmod 600 /var/www/crudwithauth/appsettings.json
-      - name: Run service
-        run: |
-          sudo chmod +x /var/www/crudwithauth/CrudWithAuth.dll
-          sudo systemctl daemon-reload
-          sudo systemctl restart application
-          sleep 5
-          sudo systemctl is-active application || (sudo journalctl -u application -n 20 && exit 1)
-
-
-  
-
-
+          # Просто запускаем плейбук без передачи переменных
+          ansible-playbook -i "localhost," -c local deploy.yml

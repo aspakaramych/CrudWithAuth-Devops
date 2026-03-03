@@ -1,0 +1,27 @@
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+        }
+    },
+    "AllowedHosts": "*",
+    "ConnectionStrings": {
+        "DefaultConnection": "Host=localhost;Port=5432;Database={{ db_name }};Username={{ db_user }};Password={{ db_password }}"
+    },
+    "Redis": {
+        "InstanceName": "CrudWithAuth:",
+        "Endpoints": [
+            {% for port in redis_ports %}
+            "localhost:{{ port }}"{{ "," if not loop.last else "" }}
+            {% endfor %}
+        ]
+    },
+    "Jwt": {
+        "SecretKey": "{{ jwt_secret_key }}",
+        "Issuer": "CrudWithAuth",
+        "Audience": "CrudWithAuth",
+        "AccessTokenExpirationMinutes": 60,
+        "RefreshTokenExpirationDays": 7
+    }
+}
