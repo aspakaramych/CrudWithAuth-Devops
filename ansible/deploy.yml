@@ -13,21 +13,37 @@
 
   tasks:
 
-    - name: Add Microsoft Repository
-      apt:
-        deb: "https://packages.microsoft.com/config/ubuntu/{{ ansible_distribution_version }}/packages-microsoft-prod.deb"
+    - name: Download Microsoft GPG key
+      get_url:
+        url: https://packages.microsoft.com/keys/microsoft.asc
+        dest: /etc/apt/keyrings/microsoft.asc
+        mode: '0644'
 
+    - name: Add Microsoft Repository to sources list
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.asc] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
+        state: present
+        filename: microsoft-prod
 
-    - name: Update apt cache
+    - name: Update apt cache after adding repo
       apt:
         update_cache: yes
 
-    - name: Install .NET 9.0 SDK and Runtime
-      apt: 
+    - name: Install .NET 9.0 SDK
+      apt:
         name: 
           - dotnet-sdk-9.0
           - aspnetcore-runtime-9.0
         state: present
+      register: dotnet_install
+      ignore_errors: yes
+
+
+    - name: Install .NET 9 via script if apt fails
+      shell: |
+        curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
+        ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+      when: dotnet_install is failed
 
     - name: Install System Packages
       apt: 
