@@ -16,12 +16,18 @@
     - name: Add Microsoft Repository
       apt:
         deb: "https://packages.microsoft.com/config/ubuntu/{{ ansible_distribution_version }}/packages-microsoft-prod.deb"
-    
+
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
     - name: Install .NET 9.0 SDK and Runtime
       apt: 
-        name: [dotnet-sdk-9.0, aspnetcore-runtime-9.0]
+        name: 
+          - dotnet-sdk-9.0
+          - aspnetcore-runtime-9.0
         state: present
-        update_cache: yes
 
     - name: Install System Packages
       apt: 
