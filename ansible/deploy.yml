@@ -67,9 +67,14 @@
     - name: Start Redis instances
       shell: "redis-server /etc/redis/redis_{{ item }}.conf --daemonize yes"
       loop: "{{ redis_ports }}"
-      vars:
-        port: "{{ item }}"
       changed_when: false
+
+    - name: Wait for Redis ports to be ready
+      wait_for:
+        port: "{{ item }}"
+        host: 127.0.0.1
+        timeout: 10
+      loop: "{{ redis_ports }}"
 
     - name: Check Redis Cluster status
       shell: redis-cli -p 7000 cluster info
@@ -82,6 +87,11 @@
         redis-cli --cluster create
         {% for p in redis_ports %} 127.0.0.1:{{ p }} {% endfor %}
         --cluster-replicas 1 --cluster-yes
+      when: "'cluster_state:ok' not in redis_cluster_check.stdout"
+      register: cluster_result
+      failed_when: 
+        - cluster_result.rc != 0
+        - "'Node 127.0.0.1:7000 is not empty' not in cluster_result.stderr"
       
 
     - name: Ensure app directory exists
