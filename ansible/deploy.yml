@@ -43,7 +43,8 @@
         - postgresql_user:
             name: "{{ db_user }}"
             password: "{{ db_password }}"
-            priv: "ALL"
+            db: "{{ db_name }}"  
+            priv: "ALL"          
 
     - name: Ensure Redis directories exist
       file:
