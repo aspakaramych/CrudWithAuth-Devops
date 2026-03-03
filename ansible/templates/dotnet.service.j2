@@ -4,7 +4,7 @@ After=network.target postgresql.service
 
 [Service]
 WorkingDirectory={{ app_dir }}
-ExecStart={{ dotnet_path }} {{ app_dir }}/CrudWithAuth
+ExecStart={{ dotnet_path }} {{ app_dir }}/CrudWithAuth.dll
 Restart=on-failure
 RestartSec=10
 KillSignal=SIGINT
