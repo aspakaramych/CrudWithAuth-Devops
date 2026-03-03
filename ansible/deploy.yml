@@ -10,6 +10,7 @@
     db_password: "postgres_password"
     redis_ports: [7000, 7001, 7002, 7003, 7004, 7005]
     jwt_secret_key: H81NOnU9S+BLv1YMn3KIZ1w1g9MgfDI4D8l6QiJbJsA=
+    dotnet_path: "/usr/bin/dotnet"
 
   tasks:
     - name: Check if .NET is already installed
