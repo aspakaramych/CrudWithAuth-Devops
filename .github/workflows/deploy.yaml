@@ -10,7 +10,6 @@ on:
 
 jobs:
   deploy:
-    needs: ["publish"]
     runs-on: self-hosted
     steps:
       - name: Checkout code
