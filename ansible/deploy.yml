@@ -127,6 +127,29 @@
         src: templates/dotnet.service.j2
         dest: /etc/systemd/system/crudwithauth.service
       notify: Restart Application
+    
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Deploy Nginx configuration from template
+      template:
+        src: templates/nginx_app.j2
+        dest: /etc/nginx/sites-available/crudwithauth
+      notify: Reload Nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/crudwithauth
+        dest: /etc/nginx/sites-enabled/crudwithauth
+        state: link
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Reload Nginx
   
   handlers:
     - name: Restart Application
@@ -135,3 +158,8 @@
         state: restarted
         enabled: yes
         daemon_reload: yes
+    
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
