@@ -11,52 +11,29 @@
     redis_ports: [7000, 7001, 7002, 7003, 7004, 7005]
 
   tasks:
-    - name: Check if .NET 9 is already installed
+    - name: Check if .NET is already installed
       command: dotnet --version
       register: dotnet_check
       ignore_errors: yes
       changed_when: false
 
-    - name: Configure Microsoft Repository
-      block:
-        - name: Cleanup Microsoft Repo Conflicts
-          shell: |
-            rm -f /etc/apt/sources.list.d/microsoft-prod.list
-            rm -f /usr/share/keyrings/microsoft-prod.gpg
-          ignore_errors: yes
-
-        - name: Add Microsoft Repository
-          apt:
-            deb: "https://packages.microsoft.com/config/ubuntu/{{ ansible_distribution_version }}/packages-microsoft-prod.deb"
-          register: apt_res
-          until: apt_res is success
-          retries: 5
-          delay: 5
-
-        - name: Update apt cache
-          apt:
-            update_cache: yes
+    - name: Install .NET 9 via Official Script (Reliable Method)
+      shell: |
+        curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
+        ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
       when: dotnet_check.failed
-
-    - name: Install .NET 9.0 SDK and Runtime
-      apt: 
-        name: 
-          - dotnet-sdk-9.0
-          - aspnetcore-runtime-9.0
-        state: present
-      register: apt_dotnet_install
-      until: apt_dotnet_install is success
-      retries: 5
-      delay: 5
-      when: dotnet_check.failed
+      args:
+        creates: /usr/bin/dotnet
 
     - name: Install System Packages
       apt: 
         name: [postgresql, postgresql-contrib, redis-server, python3-psycopg2, acl, curl]
         state: present
-      register: apt_sys_install
-      until: apt_sys_install is success
+        update_cache: yes
+      register: apt_res
+      until: apt_res is success
       retries: 5
+      delay: 5
 
     - name: Configure PostgreSQL Database
       become_user: postgres
@@ -83,13 +60,13 @@
       loop: "{{ redis_ports }}"
     
     - name: Start Redis instances
-      shell: "redis-server /etc/redis/redis_{{ item }}.conf &"
+      shell: "redis-server /etc/redis/redis_{{ item }}.conf --daemonize yes"
       loop: "{{ redis_ports }}"
       changed_when: false
 
-    - name: Check if Redis Cluster already exists
-      command: redis-cli -p 7000 cluster info
-      register: redis_cluster_status
+    - name: Check Redis Cluster status
+      shell: redis-cli -p 7000 cluster info
+      register: redis_cluster_check
       ignore_errors: yes
       changed_when: false
 
@@ -98,7 +75,7 @@
         redis-cli --cluster create
         {% for p in redis_ports %} 127.0.0.1:{{ p }} {% endfor %}
         --cluster-replicas 1 --cluster-yes
-      when: "'cluster_state:ok' not in redis_cluster_status.stdout"
+      
 
     - name: Ensure app directory exists
       file: 
@@ -116,21 +93,4 @@
     
     - name: Render appsettings.json
       template: 
-        src: templates/appsettings.json.j2
-        dest: "{{ app_dir }}/appsettings.json"
-        owner: "{{ app_user }}"
-        mode: '0600'
-    
-    - name: Deploy systemd unit
-      template:
-        src: templates/dotnet.service.j2
-        dest: /etc/systemd/system/crudwithauth.service
-      notify: Restart Application
-  
-  handlers:
-    - name: Restart Application
-      systemd:
-        name: crudwithauth
-        state: restarted
-        enabled: yes
-        daemon_reload: yes
+        src: templates/appsettings
