@@ -46,5 +46,4 @@ jobs:
 
       - name: Run Ansible Playbook
         run: |
-          # Запускаем исправленный плейбук
-          ansible-playbook -i "localhost," -c local deploy.yml
+          ansible-playbook -i "localhost," -c local ansible/deploy.yml
