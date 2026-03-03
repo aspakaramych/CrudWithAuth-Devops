@@ -99,7 +99,6 @@
       delay: 5
       when: "'cluster_state:ok' not in redis_cluster_check.stdout"
       
-
     - name: Ensure app directory exists
       file: 
         path: "{{ app_dir }}"
@@ -116,4 +115,21 @@
     
     - name: Render appsettings.json
       template: 
-        src: templates/appsettings
+        src: templates/appsettings.json.j2
+        dest: "{{ app_dir }}/appsettings.json"
+        owner: "{{ app_user }}"
+        mode: '0600'
+    
+    - name: Deploy systemd unit
+      template:
+        src: templates/dotnet.service.j2
+        dest: /etc/systemd/system/crudwithauth.service
+      notify: Restart Application
+  
+  handlers:
+    - name: Restart Application
+      systemd:
+        name: crudwithauth
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
