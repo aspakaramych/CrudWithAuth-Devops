@@ -53,16 +53,22 @@
         owner: redis
         group: redis
       loop: "{{ redis_ports }}"
+      vars:
+        port: "{{ item }}"
 
     - name: Configure Redis Nodes
       template:
         src: templates/redis.conf.j2
         dest: "/etc/redis/redis_{{ item }}.conf"
       loop: "{{ redis_ports }}"
+      vars:
+        port: "{{ item }}"
     
     - name: Start Redis instances
       shell: "redis-server /etc/redis/redis_{{ item }}.conf --daemonize yes"
       loop: "{{ redis_ports }}"
+      vars:
+        port: "{{ item }}"
       changed_when: false
 
     - name: Check Redis Cluster status
