@@ -37,7 +37,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-release
-          path: ./out 
+          path: ./ansible/out  
 
       - name: Install Ansible
         run: |
@@ -46,4 +46,6 @@ jobs:
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i "localhost," -c local ansible/deploy.yml
+          # Переходим в папку ansible и запускаем оттуда
+          cd ansible
+          ansible-playbook -i "localhost," -c local deploy.yml
