@@ -6,32 +6,28 @@
     app_dir: "/var/www/crudwithauth"
     app_user: "www-data"
     dotnet_path: "/usr/bin/dotnet"
-
     db_name: "crud_db"
     db_user: "postgres"
     db_password: "postgres_password"
-
     redis_ports: [7000, 7001, 7002, 7003, 7004, 7005]
-    jwt_secret_key: "yaYRMgVo2ZKUNTu4y6SzjloBrruT69BMrbUzpjN26uJ"
 
   tasks:
+
     - name: Add Microsoft Repository
       apt:
         deb: "https://packages.microsoft.com/config/ubuntu/{{ ansible_distribution_version }}/packages-microsoft-prod.deb"
     
     - name: Install .NET 9.0 SDK and Runtime
       apt: 
-        name: 
-          - dotnet-sdk-9.0
-          - aspnetcore-runtime-9.0
+        name: [dotnet-sdk-9.0, aspnetcore-runtime-9.0]
         state: present
-        update-cache: yes
+        update_cache: yes
 
     - name: Install System Packages
       apt: 
         name: [postgresql, postgresql-contrib, redis-server, python3-psycopg2, acl, curl]
         state: present
-      
+
     - name: Configure PostgreSQL Database
       become_user: postgres
       block:
@@ -39,11 +35,19 @@
             name: "{{ db_name }}"
         - postgresql_user:
             name: "{{ db_user }}"
-            password: {{ db_password }}
+            password: "{{ db_password }}"
             priv: "ALL"
 
-    - name: Configure Redis Database
+    - name: Ensure Redis directories exist
       file:
+        path: "/var/lib/redis/{{ item }}"
+        state: directory
+        owner: redis
+        group: redis
+      loop: "{{ redis_ports }}"
+
+    - name: Configure Redis Nodes
+      template:
         src: templates/redis.conf.j2
         dest: "/etc/redis/redis_{{ item }}.conf"
       loop: "{{ redis_ports }}"
@@ -51,30 +55,30 @@
         port: "{{ item }}"
     
     - name: Start Redis instances
-      shell: "redis-server /etc/redis/redis_ {{ item }}.conf"
+      shell: "redis-server /etc/redis/redis_{{ item }}.conf"
       loop: "{{ redis_ports }}"
       changed_when: false
 
-    - name: Create Cluster
+    - name: Create Redis Cluster
       shell: >
-        redis-cli --cluster
+        redis-cli --cluster create
         {% for p in redis_ports %} 127.0.0.1:{{ p }} {% endfor %}
-        --cluster-replicas 1 --cluster yes
+        --cluster-replicas 1 --cluster-yes
       register: cluster_init
       failed_when: false
       changed_when: "'OK' in cluster_init.stdout"
-    
-    - name: Ensure app
+
+    - name: Ensure app directory exists
       file: 
         path: "{{ app_dir }}"
         state: directory
         owner: "{{ app_user }}"
         mode: '0755'
-    
-    - name: Copy app artifacts
+
+    - name: Copy app artifacts to web folder
       copy:
-        src: "./out/"
-        dest: "{{ app_dir }}"
+        src: "./out/" 
+        dest: "{{ app_dir }}/"
         owner: "{{ app_user }}"
         mode: '0644'
     

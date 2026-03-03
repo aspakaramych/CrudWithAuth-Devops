@@ -9,16 +9,29 @@ on:
       - master
 
 jobs:
-  deploy:
+  publish:
     runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Install Ansible
+      - name: Publish application
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible
+          dotnet clean CrudWithAuth/CrudWithAuth.csproj
+          dotnet restore CrudWithAuth/CrudWithAuth.csproj
+          dotnet publish CrudWithAuth/CrudWithAuth.csproj -c Release -o ./out --no-restore
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: ./out/
+          retention-days: 1
+
+  deploy:
+    needs: ["publish"]
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -26,7 +39,12 @@ jobs:
           name: app-release
           path: ./out 
 
-      - name: Run Ansible
+      - name: Install Ansible
         run: |
-          # Просто запускаем плейбук без передачи переменных
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
+      - name: Run Ansible Playbook
+        run: |
+          # Запускаем исправленный плейбук
           ansible-playbook -i "localhost," -c local deploy.yml
