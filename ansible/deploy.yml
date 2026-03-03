@@ -5,27 +5,38 @@
   vars:
     app_dir: "/var/www/crudwithauth"
     app_user: "www-data"
-    dotnet_path: "/usr/bin/dotnet"
     db_name: "crud_db"
     db_user: "postgres"
     db_password: "postgres_password"
     redis_ports: [7000, 7001, 7002, 7003, 7004, 7005]
 
   tasks:
-    - name: Cleanup Microsoft Repo Conflicts
-      shell: |
-        rm -f /etc/apt/sources.list.d/microsoft-prod.list
-        rm -f /usr/share/keyrings/microsoft-prod.gpg
-        rm -f /etc/apt/keyrings/microsoft.asc
+    - name: Check if .NET 9 is already installed
+      command: dotnet --version
+      register: dotnet_check
       ignore_errors: yes
+      changed_when: false
 
-    - name: Add Microsoft Repository
-      apt:
-        deb: "https://packages.microsoft.com/config/ubuntu/{{ ansible_distribution_version }}/packages-microsoft-prod.deb"
-    
-    - name: Update apt cache
-      apt:
-        update_cache: yes
+    - name: Configure Microsoft Repository
+      block:
+        - name: Cleanup Microsoft Repo Conflicts
+          shell: |
+            rm -f /etc/apt/sources.list.d/microsoft-prod.list
+            rm -f /usr/share/keyrings/microsoft-prod.gpg
+          ignore_errors: yes
+
+        - name: Add Microsoft Repository
+          apt:
+            deb: "https://packages.microsoft.com/config/ubuntu/{{ ansible_distribution_version }}/packages-microsoft-prod.deb"
+          register: apt_res
+          until: apt_res is success
+          retries: 5
+          delay: 5
+
+        - name: Update apt cache
+          apt:
+            update_cache: yes
+      when: dotnet_check.failed
 
     - name: Install .NET 9.0 SDK and Runtime
       apt: 
@@ -33,18 +44,19 @@
           - dotnet-sdk-9.0
           - aspnetcore-runtime-9.0
         state: present
-
-
-    - name: Install .NET 9 via script if apt fails
-      shell: |
-        curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
-        ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
-      when: dotnet_install is failed
+      register: apt_dotnet_install
+      until: apt_dotnet_install is success
+      retries: 5
+      delay: 5
+      when: dotnet_check.failed
 
     - name: Install System Packages
       apt: 
         name: [postgresql, postgresql-contrib, redis-server, python3-psycopg2, acl, curl]
         state: present
+      register: apt_sys_install
+      until: apt_sys_install is success
+      retries: 5
 
     - name: Configure PostgreSQL Database
       become_user: postgres
@@ -69,12 +81,16 @@
         src: templates/redis.conf.j2
         dest: "/etc/redis/redis_{{ item }}.conf"
       loop: "{{ redis_ports }}"
-      vars:
-        port: "{{ item }}"
     
     - name: Start Redis instances
-      shell: "redis-server /etc/redis/redis_{{ item }}.conf"
+      shell: "redis-server /etc/redis/redis_{{ item }}.conf &"
       loop: "{{ redis_ports }}"
+      changed_when: false
+
+    - name: Check if Redis Cluster already exists
+      command: redis-cli -p 7000 cluster info
+      register: redis_cluster_status
+      ignore_errors: yes
       changed_when: false
 
     - name: Create Redis Cluster
@@ -82,9 +98,7 @@
         redis-cli --cluster create
         {% for p in redis_ports %} 127.0.0.1:{{ p }} {% endfor %}
         --cluster-replicas 1 --cluster-yes
-      register: cluster_init
-      failed_when: false
-      changed_when: "'OK' in cluster_init.stdout"
+      when: "'cluster_state:ok' not in redis_cluster_status.stdout"
 
     - name: Ensure app directory exists
       file: 
