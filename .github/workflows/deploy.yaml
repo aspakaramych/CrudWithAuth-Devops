@@ -44,5 +44,6 @@ jobs:
       - name: Run Ansible Playbook
         run: |
           cd ansible
-          # Мы просто запускаем ansible, он уже есть в системе
           ansible-playbook -i "localhost," -c local deploy.yml
+        env:
+          YANDEX_PASS: ${{ secrets.YANDEX_PASS }}

@@ -1,0 +1,10 @@
+app_dir: "/var/www/crudwithauth"
+app_user: "www-data"
+db_name: "crud_db"
+db_user: "postgres"
+db_password: "postgres_password"
+redis_ports: [7000, 7001, 7002, 7003, 7004, 7005]
+jwt_secret_key: H81NOnU9S+BLv1YMn3KIZ1w1g9MgfDI4D8l6QiJbJsA=
+dotnet_path: "/usr/bin/dotnet"
+yandex_user: "aspakldjsfjk@yandex.com"
+yandex_app_pass: "{{ lookup('env', 'YANDEX_PASS') }}"

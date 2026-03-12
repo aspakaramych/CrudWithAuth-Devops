@@ -1,0 +1,11 @@
+- name: Restart Application
+  systemd:
+    name: crudwithauth
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+    
+- name: Reload Nginx
+  service:
+    name: nginx
+    state: reloaded

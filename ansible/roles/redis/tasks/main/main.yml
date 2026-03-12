@@ -1,0 +1,52 @@
+- name: Ensure Redis directories exist
+  file:
+    path: "/var/lib/redis/{{ item }}"
+    state: directory
+    owner: redis
+    group: redis
+  loop: "{{ redis_ports }}"
+  vars:
+      port: "{{ item }}"
+
+- name: Configure Redis Nodes
+  template:
+    src: templates/redis.conf.j2
+    dest: "/etc/redis/redis_{{ item }}.conf"
+  loop: "{{ redis_ports }}"
+  vars:
+      port: "{{ item }}"
+    
+- name: Start Redis instances
+  shell: "redis-server /etc/redis/redis_{{ item }}.conf --daemonize yes"
+  loop: "{{ redis_ports }}"
+  changed_when: false
+
+- name: Wait for Redis ports to be ready
+  wait_for:
+      port: "{{ item }}"
+      host: 127.0.0.1
+      timeout: 10
+  loop: "{{ redis_ports }}"
+
+- name: Check Redis Cluster status
+  shell: redis-cli -p 7000 cluster info
+  register: redis_cluster_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Reset Redis nodes to clean state
+  shell: "redis-cli -p {{ item }} flushall && redis-cli -p {{ item }} cluster reset hard"
+  loop: "{{ redis_ports }}"
+  changed_when: false
+      
+
+- name: Create Redis Cluster
+  shell: >
+        redis-cli --cluster create
+        {% for p in redis_ports %} 127.0.0.1:{{ p }} {% endfor %}
+        --cluster-replicas 1 --cluster-yes
+  register: cluster_result
+  failed_when: 
+      - cluster_result.rc != 0
+      - "'already in cluster' not in cluster_result.stderr"
+      - "'Node 127.0.0.1:7000 is not empty' not in cluster_result.stderr"

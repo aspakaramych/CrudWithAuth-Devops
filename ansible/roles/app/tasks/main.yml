@@ -1,0 +1,49 @@
+- name: Ensure app directory exists
+  file: 
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    mode: '0755'
+
+- name: Copy app artifacts to web folder
+  copy:
+  src: "./out/" 
+  dest: "{{ app_dir }}/"
+  owner: "{{ app_user }}"
+  mode: '0644'
+    
+- name: Render appsettings.json
+  template: 
+      src: templates/appsettings.json.j2
+      dest: "{{ app_dir }}/appsettings.json"
+      owner: "{{ app_user }}"
+      mode: '0600'
+    
+- name: Deploy systemd unit
+  template:
+    src: templates/dotnet.service.j2
+    dest: /etc/systemd/system/crudwithauth.service
+  notify: Restart Application
+    
+- name: Install Nginx
+  apt:
+      name: nginx
+      state: present
+
+- name: Deploy Nginx configuration from template
+  template:
+    src: templates/nginx_app.j2
+    dest: /etc/nginx/sites-available/crudwithauth
+  notify: Reload Nginx
+
+- name: Enable Nginx site
+  file:
+      src: /etc/nginx/sites-available/crudwithauth
+      dest: /etc/nginx/sites-enabled/crudwithauth
+      state: link
+
+- name: Remove default Nginx site
+  file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+  notify: Reload Nginx

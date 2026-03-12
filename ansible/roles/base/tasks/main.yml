@@ -1,0 +1,51 @@
+- name: Check if .NET is already installed
+  command: dotnet --version
+  register: dotnet_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Install .NET 9 via Official Script (Reliable Method)
+  shell: |
+        curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
+        ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
+  when: dotnet_check.failed
+  args:
+      creates: /usr/bin/dotnet
+
+- name: Install System Packages
+  apt: 
+      name: [postgresql, postgresql-contrib, redis-server, python3-psycopg2, acl, curl]
+      state: present
+      update_cache: yes
+  register: apt_res
+  until: apt_res is success
+  retries: 5
+  delay: 5
+    
+- name: Install rclone
+  apt:
+      name: rclone
+      state: present
+
+- name: Create rclone config
+  shell: |
+        mkdir -p /root/.config/rclone
+        rclone config create yandex webdav url=https://webdav.yandex.ru vendor=yandex user={{ yandex_user }} pass={{ yandex_app_pass }}
+  args:
+      creates: /root/.config/rclone/rclone.conf
+
+- name: Create log directory for the app
+  file:
+      path: /var/log/crudwithauth
+      state: directory
+      owner: "{{ app_user }}"
+      group: "{{ app_user }}"
+      mode: '0755'
+
+- name: Configure logrotate for the app
+  template:
+      src: templates/logrotate.conf.j2
+      dest: /etc/logrotate.d/crudwithauth
+      owner: root
+      group: root
+      mode: '0644'
