@@ -42,8 +42,9 @@ jobs:
           path: ./ansible/out  
 
       - name: Run Ansible Playbook
+        env:
+          YANDEX_PASS: ${{ secrets.YANDEX_PASS }}
         run: |
           cd ansible
           ansible-playbook -i "localhost," -c local deploy.yml
-        env:
-          YANDEX_PASS: ${{ secrets.YANDEX_PASS }}
+        
