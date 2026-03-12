@@ -1,0 +1,13 @@
+/var/log/crudwithauth/*.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 0640 {{ app_user }} {{ app_user }}
+    sharedscripts
+    postrotate
+        systemctl reload crudwithauth > /dev/null 2>&1 || true
+    endscript
+}

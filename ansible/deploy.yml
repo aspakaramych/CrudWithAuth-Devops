@@ -100,7 +100,23 @@
         - cluster_result.rc != 0
         - "'already in cluster' not in cluster_result.stderr"
         - "'Node 127.0.0.1:7000 is not empty' not in cluster_result.stderr"
-      
+    
+    - name: Create log directory for the app
+      file:
+        path: /var/log/crudwithauth
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Configure logrotate for the app
+      template:
+        src: templates/logrotate.conf.j2
+        dest: /etc/logrotate.d/crudwithauth
+        owner: root
+        group: root
+        mode: '0644'
+
     - name: Ensure app directory exists
       file: 
         path: "{{ app_dir }}"
