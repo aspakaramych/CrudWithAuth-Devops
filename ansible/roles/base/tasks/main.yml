@@ -35,6 +35,10 @@
   args:
       creates: /root/.config/rclone/rclone.conf
 
+- name: Debug Secret Length
+  debug:
+    msg: "Пароль дошел! Длина строки: {{ yandex_app_pass | length }} символов."
+
 - name: Create log directory for the app
   file:
       path: /var/log/crudwithauth
