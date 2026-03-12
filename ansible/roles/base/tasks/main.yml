@@ -29,8 +29,9 @@
 
 - name: Create rclone config
   shell: |
+        OBSCURED_PASS=$(rclone obscure "{{ yandex_app_pass }}")
         mkdir -p /root/.config/rclone
-        rclone config create yandex webdav url=https://webdav.yandex.ru vendor=yandex user={{ yandex_user }} pass={{ yandex_app_pass }}
+        rclone config create yandex webdav url=https://webdav.yandex.ru vendor=yandex user={{ yandex_user }} pass="$OBSCURED_PASS"
   args:
       creates: /root/.config/rclone/rclone.conf
 
