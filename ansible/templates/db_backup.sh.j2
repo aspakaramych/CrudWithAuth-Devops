@@ -2,6 +2,8 @@
 BACKUP_DIR="/var/backups/postgres"
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 FILENAME="${BACKUP_DIR}/{{ db_name }}_${TIMESTAMP}.sql.gz"
+REMOTE_NAME="yandex" 
+REMOTE_DIR="backups/db"
 
 mkdir -p $BACKUP_DIR
 
@@ -16,5 +18,14 @@ if [ -s "$FILENAME" ]; then
     find $BACKUP_DIR -type f -mtime +7 -name "*.sql.gz" -delete
 else
     echo "Error: Backup file is empty or was not created!"
+    exit 1
+fi
+
+rclone copy "$FILENAME" "${REMOTE_NAME}:${REMOTE_DIR}"
+if [ $? -eq 0 ]; then
+    echo "Successfully uploaded to Yandex.Disk"
+    find $BACKUP_DIR -type f -mtime +3 -name "*.sql.gz" -delete
+else
+    echo "Error: Upload to Yandex.Disk failed!"
     exit 1
 fi
