@@ -1,13 +1,15 @@
 - name: Configure PostgreSQL Database
-  become_user: postgres
   block:
-    - postgresql_db:
+    - name: Create database
+      postgresql_db:
         name: "{{ db_name }}"
-    - postgresql_user:
+    - name: Create user
+      postgresql_user:
         name: "{{ db_user }}"
         password: "{{ db_password }}"
-        db: "{{ db_name }}"  
-        priv: "ALL"          
+        db: "{{ db_name }}"
+        priv: "ALL"
+  become_user: postgres          
     
 - name: Ensure backup directory exists
   file:

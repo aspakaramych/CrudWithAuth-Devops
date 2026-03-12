@@ -7,10 +7,10 @@
 
 - name: Copy app artifacts to web folder
   copy:
-  src: "./out/" 
-  dest: "{{ app_dir }}/"
-  owner: "{{ app_user }}"
-  mode: '0644'
+    src: "./out/"
+    dest: "{{ app_dir }}/"
+    owner: "{{ app_user }}"
+    mode: '0644'
     
 - name: Render appsettings.json
   template: 
