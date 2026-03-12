@@ -1,0 +1,20 @@
+#!/bin/bash
+BACKUP_DIR="/var/backups/postgres"
+TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+FILENAME="${BACKUP_DIR}/{{ db_name }}_${TIMESTAMP}.sql.gz"
+
+mkdir -p $BACKUP_DIR
+
+echo "Start backup"
+
+export PGPASSWORD="{{ db_password }}"
+pg_dump -h localhost -U {{ db_user }} {{ db_name }} | gzip > $FILENAME
+
+
+if [ -s "$FILENAME" ]; then
+    echo "Backup successfully created: $FILENAME"
+    find $BACKUP_DIR -type f -mtime +7 -name "*.sql.gz" -delete
+else
+    echo "Error: Backup file is empty or was not created!"
+    exit 1
+fi
