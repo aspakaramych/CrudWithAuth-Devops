@@ -11,6 +11,8 @@
     redis_ports: [7000, 7001, 7002, 7003, 7004, 7005]
     jwt_secret_key: H81NOnU9S+BLv1YMn3KIZ1w1g9MgfDI4D8l6QiJbJsA=
     dotnet_path: "/usr/bin/dotnet"
+    yandex_user: "aspakldjsfjk@yandex.com"
+    yandex_app_pass: "zxgfsnanrtikotyo"
 
   tasks:
     - name: Check if .NET is already installed
@@ -41,7 +43,14 @@
       apt:
         name: rclone
         state: present
-        
+
+    - name: Create rclone config
+      shell: |
+        mkdir -p /root/.config/rclone
+        rclone config create yandex webdav url=https://webdav.yandex.ru vendor=yandex user={{ yandex_user }} pass={{ yandex_app_pass }}
+      args:
+        creates: /root/.config/rclone/rclone.conf
+    
     - name: Configure PostgreSQL Database
       become_user: postgres
       block:
