@@ -92,7 +92,7 @@ app.MapOpenApi();
 app.MapScalarApiReference();
 
 app.UseHttpMetrics();
-app.MapMetrics();
+app.MapMetrics().AllowAnonymous();
 app.UseHttpsRedirection();
 app.UseMiddleware<TokenValidationMiddleware>();
 app.UseAuthentication();
