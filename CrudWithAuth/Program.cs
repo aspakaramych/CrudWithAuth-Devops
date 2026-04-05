@@ -81,7 +81,8 @@ builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-
+app.UseHttpMetrics();
+app.MapMetrics().AllowAnonymous();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -90,9 +91,6 @@ using (var scope = app.Services.CreateScope())
 
 app.MapOpenApi();
 app.MapScalarApiReference();
-
-app.UseHttpMetrics();
-app.MapMetrics().AllowAnonymous();
 app.UseMiddleware<TokenValidationMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
