@@ -91,10 +91,6 @@ using (var scope = app.Services.CreateScope())
 
 app.MapOpenApi();
 app.MapScalarApiReference();
-app.UseWhen(context => !context.Request.Path.StartsWithSegments("/metrics"), appBuilder =>
-{
-    appBuilder.UseMiddleware<TokenValidationMiddleware>();
-});
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
