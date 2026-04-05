@@ -7,6 +7,7 @@ using CrudWithAuth.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Prometheus;
 using Scalar.AspNetCore;
 using StackExchange.Redis;
 
@@ -90,7 +91,8 @@ using (var scope = app.Services.CreateScope())
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-
+app.UseHttpMetrics();
+app.MapMetrics();
 app.UseHttpsRedirection();
 app.UseMiddleware<TokenValidationMiddleware>();
 app.UseAuthentication();
