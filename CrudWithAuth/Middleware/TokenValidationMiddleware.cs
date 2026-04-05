@@ -27,6 +27,8 @@ public class TokenValidationMiddleware
         ITokenBlacklistService tokenBlacklistService)
     {
         var path = context.Request.Path.Value ?? string.Empty;
+        // ВЫВЕДИ ЭТО В КОНСОЛЬ
+        Console.WriteLine($"--- REQ PATH: {path} ---");
 
         if (IsPublicPath(path))
         {
