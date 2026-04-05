@@ -12,7 +12,8 @@ public class TokenValidationMiddleware
         "/api/auth/login",
         "/api/auth/register",
         "/openapi/v1.json",
-        "/scalar"
+        "/scalar",
+        "/metrics"
     };
 
     public TokenValidationMiddleware(RequestDelegate next)
