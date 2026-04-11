@@ -1,16 +1,18 @@
+{% raw %}
 apiVersion: 1
 
 datasources:
   - name: Elasticsearch
-    uid: Elasticsearch
+    uid: "Elasticsearch"
     type: elasticsearch
     access: proxy
-    url: http://localhost:9200
+    url: http://127.0.0.1:9200
     basicAuth: false
     database: "[logs-]YYYY.MM.DD"
     jsonData:
       index: "logs-*"
       timeField: "@timestamp"
-      esVersion: "8.0.0"
+      esVersion: 80
       logMessageField: "message"
       logLevelField: "log.level"
+{% endraw %}
