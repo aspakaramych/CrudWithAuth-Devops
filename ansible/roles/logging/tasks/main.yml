@@ -107,6 +107,12 @@
   args:
     chdir: "{{ app_dir }}"
 
+- name: Install rsyslog
+  apt:
+    name: rsyslog
+    state: present
+    update_cache: yes
+
 - name: Configure syslog to forward to Logstash
   lineinfile:
     path: /etc/rsyslog.conf
