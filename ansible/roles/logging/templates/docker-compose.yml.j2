@@ -9,8 +9,8 @@ services:
       - cluster.name=es-docker-cluster
       - discovery.seed_hosts=es02,es03
       - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=false
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
       - xpack.security.enabled=false
     ulimits:
       memlock:
@@ -31,8 +31,8 @@ services:
       - cluster.name=es-docker-cluster
       - discovery.seed_hosts=es01,es03
       - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=false
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
       - xpack.security.enabled=false
     ulimits:
       memlock:
@@ -51,8 +51,8 @@ services:
       - cluster.name=es-docker-cluster
       - discovery.seed_hosts=es01,es02
       - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=false
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
       - xpack.security.enabled=false
     ulimits:
       memlock:

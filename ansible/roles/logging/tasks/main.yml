@@ -1,3 +1,10 @@
+- name: Increase vm.max_map_count for Elasticsearch
+  sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+    reload: yes
+
 - name: Create logging stack directories
   file:
     path: "{{ item }}"
@@ -27,17 +34,23 @@
     mode: '0644'
 
 - name: Launch logging stack
-  command: docker compose -f "{{ app_dir }}/logging/docker-compose.yml" up -d
+  command: docker compose -f "{{ app_dir }}/logging/docker-compose.yml" up -d --force-recreate
   args:
     chdir: "{{ app_dir }}/logging"
 
-- name: Wait for Elasticsearch to be ready
+- name: Wait for Elasticsearch port 9200
+  wait_for:
+    host: localhost
+    port: 9200
+    timeout: 300
+
+- name: Wait for Elasticsearch to be healthy
   uri:
-    url: "http://localhost:9200"
+    url: "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s"
     method: GET
   register: es_status
   until: es_status.status == 200
-  retries: 30
+  retries: 20
   delay: 10
 
 - name: Setup ILM Policy
