@@ -2,36 +2,22 @@
 BACKUP_DIR="/var/backups/postgres"
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 FILENAME="${BACKUP_DIR}/{{ db_name }}_${TIMESTAMP}.sql.gz"
-REMOTE_NAME="yandex" 
-REMOTE_DIR="backups/db"
 METRICS_FILE="/var/lib/node_exporter/textfile_collector/backup.prom"
 START_TIME=$(date +%s)
 
 mkdir -p $BACKUP_DIR
 mkdir -p /var/lib/node_exporter/textfile_collector
 
-echo "Start backup"
+echo "Start local backup"
 
 export PGPASSWORD="{{ db_password }}"
 pg_dump -h localhost -U {{ db_user }} {{ db_name }} | gzip > $FILENAME
 
-
 if [ -s "$FILENAME" ]; then
-    echo "Backup successfully created: $FILENAME"
+    echo "Backup successfully created locally: $FILENAME"
+    # Keeping only last 7 backups locally
     find $BACKUP_DIR -type f -mtime +7 -name "*.sql.gz" -delete
-else
-    echo "Error: Backup file is empty or was not created!"
-    cat << EOF > "$METRICS_FILE.tmp"
-backup_success 0
-EOF
-    mv "$METRICS_FILE.tmp" "$METRICS_FILE"
-    exit 1
-fi
-
-rclone copy "$FILENAME" "${REMOTE_NAME}:${REMOTE_DIR}"
-if [ $? -eq 0 ]; then
-    echo "Successfully uploaded to Yandex.Disk"
-    find $BACKUP_DIR -type f -mtime +3 -name "*.sql.gz" -delete
+    
     END_TIME=$(date +%s)
     cat << EOF > "$METRICS_FILE.tmp"
 backup_success 1
@@ -39,7 +25,7 @@ backup_duration_seconds $((END_TIME - START_TIME))
 EOF
     mv "$METRICS_FILE.tmp" "$METRICS_FILE"
 else
-    echo "Error: Upload to Yandex.Disk failed!"
+    echo "Error: Local backup failed or file is empty!"
     cat << EOF > "$METRICS_FILE.tmp"
 backup_success 0
 EOF
