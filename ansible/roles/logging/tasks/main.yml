@@ -1,0 +1,106 @@
+- name: Create logging stack directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+  loop:
+    - "{{ app_dir }}/logging"
+    - "{{ app_dir }}/logging/logstash"
+    - "{{ app_dir }}/logging/elasticsearch"
+
+- name: Render Logstash configuration
+  template:
+    src: logstash/logstash.conf.j2
+    dest: "{{ app_dir }}/logging/logstash/logstash.conf"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Docker Compose configuration for logging
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ app_dir }}/logging/docker-compose.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Launch logging stack
+  command: docker compose -f "{{ app_dir }}/logging/docker-compose.yml" up -d
+  args:
+    chdir: "{{ app_dir }}/logging"
+
+- name: Wait for Elasticsearch to be ready
+  uri:
+    url: "http://localhost:9200"
+    method: GET
+  register: es_status
+  until: es_status.status == 200
+  retries: 30
+  delay: 10
+
+- name: Setup ILM Policy
+  uri:
+    url: "http://localhost:9200/_ilm/policy/logs_policy"
+    method: PUT
+    body_format: json
+    body:
+      policy:
+        phases:
+          hot:
+            actions:
+              rollover:
+                max_size: "10gb"
+                max_age: "7d"
+          delete:
+            min_age: "30d"
+            actions:
+              delete: {}
+    status_code: 200
+
+- name: Setup Index Template with ILM
+  uri:
+    url: "http://localhost:9200/_index_template/logs_template"
+    method: PUT
+    body_format: json
+    body:
+      index_patterns: ["logs-*"]
+      template:
+        settings:
+          index.lifecycle.name: "logs_policy"
+          index.number_of_shards: 3
+          index.number_of_replicas: 1
+    status_code: 200
+
+- name: Render Grafana ES datasource configuration
+  template:
+    src: grafana/datasources/elasticsearch.yml.j2
+    dest: "{{ app_dir }}/grafana/provisioning/datasources/elasticsearch.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Grafana log dashboard
+  template:
+    src: grafana/dashboards/logs_dashboard.json.j2
+    dest: "{{ app_dir }}/grafana/dashboards/logs_dashboard.json"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Restart monitoring stack to pick up new datasource and dashboard
+  command: docker compose -f "{{ app_dir }}/docker-compose.yml" restart grafana
+  args:
+    chdir: "{{ app_dir }}"
+
+- name: Configure syslog to forward to Logstash
+  lineinfile:
+    path: /etc/rsyslog.conf
+    line: "*.* @127.0.0.1:5140"
+    state: present
+  notify: restart rsyslog
+
+- name: Configure application to log to syslog (if applicable)
+  debug:
+    msg: "Ensure the application logs are caught by journald/syslog or configured to send to udp://localhost:5140"
