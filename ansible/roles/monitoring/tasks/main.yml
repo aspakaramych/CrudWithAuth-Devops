@@ -147,6 +147,6 @@
 
 
 - name: Launch docker-compose stack
-  command: docker compose -f "{{ app_dir }}/docker-compose.yml" up -d --build
+  command: docker compose -f "{{ app_dir }}/docker-compose.yml" up -d --build --force-recreate
   args:
     chdir: "{{ app_dir }}"
