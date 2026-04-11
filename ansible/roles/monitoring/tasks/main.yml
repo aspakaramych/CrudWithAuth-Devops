@@ -57,7 +57,12 @@
     - "{{ app_dir }}/grafana/provisioning/dashboards"
     - "{{ app_dir }}/grafana/provisioning/notifiers"
     - "{{ app_dir }}/grafana/dashboards"
-    - "{{ app_dir }}/node_exporter/textfile_collector"
+
+- name: Ensure textfile collector dir exists
+  file:
+    path: "/var/lib/node_exporter/textfile_collector"
+    state: directory
+    mode: '0755'
 
 - name: Render Docker Compose configuration
   template:
@@ -139,34 +144,7 @@
     group: "{{ app_user }}"
     mode: '0644'
 
-- name: Create backup script for Dockerized PostgreSQL
-  template:
-    src: templates/db_backup.sh.j2
-    dest: /usr/local/bin/db_backup.sh
-    owner: root
-    group: root
-    mode: '0755'
 
-- name: Ensure backup log directory exists
-  file:
-    path: /var/log
-    state: directory
-    mode: '0755'
-
-- name: Ensure node-exporter textfile collector directory exists
-  file:
-    path: "{{ app_dir }}/node_exporter/textfile_collector"
-    state: directory
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
-    mode: '0755'
-
-- name: Schedule PostgreSQL backup
-  ansible.builtin.cron:
-    name: "Daily postgres backup"
-    hour: "3"
-    minute: "0"
-    job: "/usr/local/bin/db_backup.sh >> /var/log/db_backup.log 2>&1"
 
 - name: Launch docker-compose stack
   command: docker compose -f "{{ app_dir }}/docker-compose.yml" up -d --build

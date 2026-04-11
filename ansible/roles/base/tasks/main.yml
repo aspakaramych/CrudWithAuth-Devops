@@ -1,6 +1,6 @@
 - name: Install System Packages
   apt:
-      name: [acl, curl]
+      name: [acl, curl, postgresql, postgresql-contrib, redis-server, python3-psycopg2]
       state: present
       update_cache: yes
   register: apt_res
@@ -54,10 +54,4 @@
       owner: root
       group: root
       mode: '0644'
-
-- name: Stop redis service if running
-  service:
-    name: redis-server
-    state: stopped
-    enabled: no
-  ignore_errors: true
+

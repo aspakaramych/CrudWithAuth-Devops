@@ -11,7 +11,7 @@ groups:
           description: "95-й процентиль времени ответа приложения выше 0.5 секунды"
 
       - alert: BackupFailed
-        expr: backup_success_backup == 0
+        expr: backup_success == 0
         for: 5m
         labels:
           severity: critical
