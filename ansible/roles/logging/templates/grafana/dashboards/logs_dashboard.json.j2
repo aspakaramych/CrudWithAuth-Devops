@@ -41,6 +41,20 @@
         "sortOrder": "Descending",
         "wrapLogMessage": false
       },
+      "targets": [
+        {
+          "alias": "",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "logs"
+            }
+          ],
+          "query": "",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
       "title": "Application Logs",
       "type": "logs"
     },
@@ -96,12 +110,25 @@
       "targets": [
         {
           "alias": "Critical Errors",
-          "datasource": {
-            "type": "elasticsearch",
-            "uid": "Elasticsearch"
-          },
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
           "query": "syslog_message: *ERROR* OR syslog_message: *CRITICAL*",
-          "refId": "A"
+          "refId": "A",
+          "timeField": "@timestamp"
         }
       ],
       "title": "Critical Error Count",
