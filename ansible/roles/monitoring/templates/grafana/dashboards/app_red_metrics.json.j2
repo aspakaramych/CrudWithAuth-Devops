@@ -13,7 +13,7 @@
       "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0},
       "id": 1,
       "options": {"legend": {"displayMode": "list"}},
-      "targets": [{"expr": "sum(rate(http_requests_received_total[5m]))", "legendFormat": "Requests per sec", "refId": "A"}],
+      "targets": [{"expr": "sum(rate(http_requests_received_total[5m])) or on() vector(0)", "legendFormat": "Requests per sec", "refId": "A"}],
       "title": "Request Rate (R)",
       "type": "timeseries"
     },
@@ -23,7 +23,7 @@
       "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0},
       "id": 2,
       "options": {"legend": {"displayMode": "list"}},
-      "targets": [{"expr": "sum(rate(http_requests_received_total{code=~\"5..\"}[5m]))", "legendFormat": "Errors per sec", "refId": "A"}],
+      "targets": [{"expr": "sum(rate(http_requests_received_total{code=~\"5..\"}[5m])) or on() vector(0)", "legendFormat": "Errors per sec", "refId": "A"}],
       "title": "Error Rate (E)",
       "type": "timeseries"
     },
@@ -50,7 +50,7 @@
       "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
       "id": 4,
       "options": {"legend": {"displayMode": "list"}},
-      "targets": [{"expr": "backup_success", "legendFormat": "Backup Status", "refId": "A"}],
+      "targets": [{"expr": "backup_success or on() vector(0)", "legendFormat": "Backup Status", "refId": "A"}],
       "title": "Database Backup Success Status",
       "type": "timeseries"
     }
@@ -63,6 +63,6 @@
   "timezone": "",
   "title": "Application RED Metrics & Backups",
   "uid": "app-red-metrics",
-  "version": 2
+  "version": 3
 }
 {%endraw%}
