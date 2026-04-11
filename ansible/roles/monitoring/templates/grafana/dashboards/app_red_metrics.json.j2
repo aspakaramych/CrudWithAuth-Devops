@@ -10,21 +10,48 @@
     {
       "datasource": {"type": "prometheus", "uid": "prometheus_local"},
       "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0},
       "id": 1,
       "options": {"legend": {"displayMode": "list"}},
-      "targets": [{"expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "95th pctl", "refId": "A"}],
-      "title": "Application 95th Percentile Latency",
+      "targets": [{"expr": "sum(rate(http_requests_received_total[5m]))", "legendFormat": "Requests per sec", "refId": "A"}],
+      "title": "Request Rate (R)",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus_local"},
       "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0},
       "id": 2,
       "options": {"legend": {"displayMode": "list"}},
-      "targets": [{"expr": "backup_success_backup", "legendFormat": "backup_success", "refId": "A"}],
-      "title": "Backup Success Status",
+      "targets": [{"expr": "sum(rate(http_requests_received_total{code=~\"5..\"}[5m]))", "legendFormat": "Errors per sec", "refId": "A"}],
+      "title": "Error Rate (E)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus_local"},
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
+      "id": 3,
+      "options": {"legend": {"displayMode": "list"}},
+      "targets": [{"expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P95 Latency", "refId": "A"}],
+      "title": "Duration (D) - P95 Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus_local"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {"options": {"0": {"text": "FAILED", "color": "red"}, "1": {"text": "SUCCESS", "color": "green"}}, "type": "value"}
+          ]
+        }
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+      "id": 4,
+      "options": {"legend": {"displayMode": "list"}},
+      "targets": [{"expr": "backup_success", "legendFormat": "Backup Status", "refId": "A"}],
+      "title": "Database Backup Success Status",
       "type": "timeseries"
     }
   ],
@@ -34,8 +61,8 @@
   "templating": {"list": []},
   "time": {"from": "now-1h", "to": "now"},
   "timezone": "",
-  "title": "Application RED Metrics",
+  "title": "Application RED Metrics & Backups",
   "uid": "app-red-metrics",
-  "version": 1
+  "version": 2
 }
 {%endraw%}
