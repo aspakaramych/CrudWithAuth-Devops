@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   postgres:
     image: postgres:16
@@ -22,7 +21,7 @@ services:
       - redis-data:/data
 
   postgres_exporter:
-    image: prom/postgres-exporter:latest
+    image: prometheuscommunity/postgres-exporter:latest
     restart: unless-stopped
     environment:
       DATA_SOURCE_URI: "postgresql://{{ db_user }}:{{ db_password }}@postgres:5432/{{ db_name }}?sslmode=disable"
