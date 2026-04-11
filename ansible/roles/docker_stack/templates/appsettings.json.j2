@@ -1,0 +1,25 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=postgres;Port=5432;Database={{ db_name }};Username={{ db_user }};Password={{ db_password }}"
+  },
+  "Redis": {
+    "InstanceName": "CrudWithAuth:",
+    "Endpoints": [
+      "redis:6379"
+    ]
+  },
+  "Jwt": {
+    "SecretKey": "{{ jwt_secret_key }}",
+    "Issuer": "CrudWithAuth",
+    "Audience": "CrudWithAuth",
+    "AccessTokenExpirationMinutes": 60,
+    "RefreshTokenExpirationDays": 7
+  }
+}

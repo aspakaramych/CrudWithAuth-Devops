@@ -1,10 +1,20 @@
-- name: Check if .NET is already installed
+- name: Install System Packages
+  apt:
+      name: [acl, curl]
+      state: present
+      update_cache: yes
+  register: apt_res
+  until: apt_res is success
+  retries: 5
+  delay: 5
+
+- name: Check if .NET SDK is already installed
   command: dotnet --version
   register: dotnet_check
   ignore_errors: true
   changed_when: false
 
-- name: Install .NET 9 via Official Script (Reliable Method)
+- name: Install .NET 9 SDK via Official Script (Reliable Method)
   shell: |
         curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
         ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
@@ -12,16 +22,6 @@
   args:
       creates: /usr/bin/dotnet
 
-- name: Install System Packages
-  apt: 
-      name: [postgresql, postgresql-contrib, redis-server, python3-psycopg2, acl, curl]
-      state: present
-      update_cache: yes
-  register: apt_res
-  until: apt_res is success
-  retries: 5
-  delay: 5
-    
 - name: Install rclone
   apt:
       name: rclone

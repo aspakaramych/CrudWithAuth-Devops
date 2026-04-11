@@ -1,0 +1,49 @@
+#!/bin/bash
+BACKUP_DIR="/var/backups/postgres"
+TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+FILENAME="${BACKUP_DIR}/{{ db_name }}_${TIMESTAMP}.sql.gz"
+REMOTE_NAME="yandex"
+REMOTE_DIR="backups/db"
+METRICS_DIR="{{ app_dir }}/node_exporter/textfile_collector"
+METRICS_FILE="${METRICS_DIR}/backup_status.prom"
+
+mkdir -p "$BACKUP_DIR"
+mkdir -p "$METRICS_DIR"
+
+status=0
+start_ts=$(date +%s)
+
+if docker exec -i postgres bash -lc 'export PGPASSWORD="{{ db_password }}" && pg_dump -U {{ db_user }} {{ db_name }}' | gzip > "$FILENAME"; then
+  if [ -s "$FILENAME" ]; then
+    echo "Backup successfully created: $FILENAME"
+    status=1
+    find "$BACKUP_DIR" -type f -mtime +7 -name "*.sql.gz" -delete
+  else
+    echo "Error: Backup file is empty or was not created!"
+    status=0
+  fi
+else
+  echo "Error: pg_dump failed"
+  status=0
+fi
+
+if [ "$status" -eq 1 ]; then
+  docker run --rm -v "$HOME/.config/rclone:/root/.config/rclone:ro" -v "$BACKUP_DIR":/backup rclone/rclone copy "/backup/$(basename "$FILENAME")" "${REMOTE_NAME}:${REMOTE_DIR}"
+  if [ $? -ne 0 ]; then
+    echo "Error: Upload to Yandex.Disk failed!"
+    status=0
+  fi
+fi
+
+cat > "$METRICS_FILE" <<EOF
+# HELP backup_success_backup Database backup status (1 = success, 0 = failure)
+# TYPE backup_success_backup gauge
+backup_success_backup ${status}
+# HELP backup_last_timestamp_seconds Timestamp of the last backup attempt
+# TYPE backup_last_timestamp_seconds gauge
+backup_last_timestamp_seconds ${start_ts}
+EOF
+
+if [ "$status" -ne 1 ]; then
+  exit 1
+fi

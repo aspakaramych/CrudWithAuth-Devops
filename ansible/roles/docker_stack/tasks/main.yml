@@ -1,0 +1,174 @@
+- name: Install Docker prerequisites
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+    update_cache: yes
+
+- name: Add Docker GPG key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+    state: present
+    filename: docker
+    update_cache: yes
+
+- name: Install Docker Engine and Compose plugin
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+
+- name: Ensure Docker is enabled and started
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create application stack root
+  file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+
+- name: Create stack directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+  loop:
+    - "{{ app_dir }}/grafana/provisioning/datasources"
+    - "{{ app_dir }}/grafana/provisioning/dashboards"
+    - "{{ app_dir }}/grafana/provisioning/notifiers"
+    - "{{ app_dir }}/grafana/dashboards"
+    - "{{ app_dir }}/node_exporter/textfile_collector"
+
+- name: Render Docker Compose configuration
+  template:
+    src: templates/docker-compose.yml.j2
+    dest: "{{ app_dir }}/docker-compose.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Prometheus configuration
+  template:
+    src: templates/prometheus.yml.j2
+    dest: "{{ app_dir }}/prometheus.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Prometheus alert rules
+  template:
+    src: templates/alert_rules.yml.j2
+    dest: "{{ app_dir }}/alert_rules.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Grafana datasource provisioning
+  template:
+    src: templates/grafana/datasources/prometheus.yml.j2
+    dest: "{{ app_dir }}/grafana/provisioning/datasources/prometheus.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Grafana dashboard provisioning
+  template:
+    src: templates/grafana/dashboard_provisioning.yml.j2
+    dest: "{{ app_dir }}/grafana/provisioning/dashboards/dashboard_provisioning.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Grafana notifier provisioning
+  template:
+    src: templates/grafana/notifiers/notifiers.yml.j2
+    dest: "{{ app_dir }}/grafana/provisioning/notifiers/notifiers.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Grafana dashboards
+  template:
+    src: templates/grafana/dashboards/node_exporter_dashboard.json.j2
+    dest: "{{ app_dir }}/grafana/dashboards/node_exporter_dashboard.json"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Grafana dashboards
+  template:
+    src: templates/grafana/dashboards/postgres_dashboard.json.j2
+    dest: "{{ app_dir }}/grafana/dashboards/postgres_dashboard.json"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Grafana dashboards
+  template:
+    src: templates/grafana/dashboards/redis_dashboard.json.j2
+    dest: "{{ app_dir }}/grafana/dashboards/redis_dashboard.json"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Grafana dashboards
+  template:
+    src: templates/grafana/dashboards/app_red_metrics.json.j2
+    dest: "{{ app_dir }}/grafana/dashboards/app_red_metrics.json"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Create backup script for Dockerized PostgreSQL
+  template:
+    src: templates/db_backup.sh.j2
+    dest: /usr/local/bin/db_backup.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure backup log directory exists
+  file:
+    path: /var/log
+    state: directory
+    mode: '0755'
+
+- name: Ensure node-exporter textfile collector directory exists
+  file:
+    path: "{{ app_dir }}/node_exporter/textfile_collector"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+
+- name: Schedule PostgreSQL backup
+  ansible.builtin.cron:
+    name: "Daily postgres backup"
+    hour: "3"
+    minute: "0"
+    job: "/usr/local/bin/db_backup.sh >> /var/log/db_backup.log 2>&1"
+
+- name: Launch docker-compose stack
+  command: docker compose -f "{{ app_dir }}/docker-compose.yml" up -d --build
+  args:
+    chdir: "{{ app_dir }}"

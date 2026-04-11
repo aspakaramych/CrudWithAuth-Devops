@@ -1,10 +1,10 @@
 [Unit]
 Description=CrudWithAuth
-After=network.target postgresql.service
+After=network.target
 
 [Service]
-WorkingDirectory={{ app_dir }}
-ExecStart={{ dotnet_path }} {{ app_dir }}/CrudWithAuth.dll
+WorkingDirectory={{ app_dir }}/publish
+ExecStart={{ dotnet_path }} {{ app_dir }}/publish/CrudWithAuth.dll
 Restart=on-failure
 RestartSec=10
 KillSignal=SIGINT

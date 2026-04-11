@@ -5,18 +5,27 @@
     owner: "{{ app_user }}"
     mode: '0755'
 
-- name: Copy app artifacts to web folder
+- name: Copy application source code
   copy:
-    src: "./out/"
-    dest: "{{ app_dir }}/"
+    src: "{{ playbook_dir }}/../CrudWithAuth/"
+    dest: "{{ app_dir }}/src/"
     owner: "{{ app_user }}"
-    mode: '0644'
-    
+    group: "{{ app_user }}"
+    mode: '0755'
+
+- name: Build and publish application
+  shell: |
+    cd {{ app_dir }}/src
+    dotnet publish CrudWithAuth.csproj -c Release -o {{ app_dir }}/publish
+  environment:
+    DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  
 - name: Render appsettings.json
   template: 
       src: templates/appsettings.json.j2
-      dest: "{{ app_dir }}/appsettings.json"
+      dest: "{{ app_dir }}/publish/appsettings.json"
       owner: "{{ app_user }}"
+      group: "{{ app_user }}"
       mode: '0600'
     
 - name: Deploy systemd unit
@@ -24,7 +33,31 @@
     src: templates/dotnet.service.j2
     dest: /etc/systemd/system/crudwithauth.service
   notify: Restart Application
-    
+
+- name: Create log directory  
+  file:
+      path: /var/log/crudwithauth
+      state: directory
+      owner: "{{ app_user }}"
+      group: "{{ app_user }}"
+      mode: '0755'
+
+- name: Wait for PostgreSQL to be ready
+  wait_for:
+    host: 127.0.0.1
+    port: 5432
+    delay: 5
+    timeout: 60
+    state: started
+
+- name: Wait for Redis to be ready
+  wait_for:
+    host: 127.0.0.1
+    port: 6379
+    delay: 5
+    timeout: 30
+    state: started
+
 - name: Install Nginx
   apt:
       name: nginx

@@ -12,9 +12,7 @@
     "Redis": {
         "InstanceName": "CrudWithAuth:",
         "Endpoints": [
-            {% for port in redis_ports %}
-            "localhost:{{ port }}"{{ "," if not loop.last else "" }}
-            {% endfor %}
+            "localhost:6379"
         ]
     },
     "Jwt": {

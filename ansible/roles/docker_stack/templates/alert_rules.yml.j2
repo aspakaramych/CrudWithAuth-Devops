@@ -1,0 +1,29 @@
+groups:
+  - name: application.rules
+    rules:
+      - alert: HighAppLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокое время ответа приложения"
+          description: "95-й процентиль времени ответа приложения выше 0.5 секунды"
+
+      - alert: BackupFailed
+        expr: backup_success_backup == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Ошибка создания бэкапа"
+          description: "Последняя попытка создания бэкапа завершилась неудачей"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis недоступен"
+          description: "Redis экспортёр перестал отдавать метрики"
