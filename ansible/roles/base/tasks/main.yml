@@ -54,3 +54,10 @@
       owner: root
       group: root
       mode: '0644'
+
+- name: Stop redis service if running
+  service:
+    name: redis-server
+    state: stopped
+    enabled: no
+  ignore_errors: true
