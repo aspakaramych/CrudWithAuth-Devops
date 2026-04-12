@@ -3,6 +3,13 @@ app_user: "www-data"
 db_name: "crud_db"
 db_user: "postgres"
 db_password: "postgres_password"
-jwt_secret_key: H81NOnU9S+BLv1YMn3KIZ1w1g9MgfDI4D8l6QiJbJsA=
+jwt_secret_key: "H81NOnU9S+BLv1YMn3KIZ1w1g9MgfDI4D8l6QiJbJsA="
 dotnet_path: "/usr/bin/dotnet"
+
 yandex_user: "aspakldjsfjk@yandex.com"
+
+smtp_smarthost: "smtp.yandex.ru:465"
+smtp_from: "aspakldjsfjk@yandex.com"
+smtp_auth_username: "aspakldjsfjk@yandex.com"
+smtp_auth_password: "vhernhnlxcjjvhkj"
+email_to: "vgrig2006@gmail.com"

@@ -1,26 +1,32 @@
 global:
   resolve_timeout: 5m
+  smtp_smarthost: '{{ smtp_smarthost }}'
+  smtp_from: '{{ smtp_from }}'
+  smtp_auth_username: '{{ smtp_auth_username }}'
+  smtp_auth_password: '{{ smtp_auth_password }}'
+  smtp_require_tls: true
 
 route:
   group_by: ['alertname']
   group_wait: 10s
   group_interval: 1m
   repeat_interval: 1h
-  receiver: 'telegram'
+  receiver: 'email-only'
 
 receivers:
-- name: 'telegram'
-  telegram_configs:
-  - bot_token: '{{ telegram_bot_token }}'
-    chat_id: {{ telegram_chat_id }}
-    parse_mode: 'HTML'
-    message: |
+- name: 'email-only'
+  email_configs:
+  - to: '{{ email_to }}'
+    send_resolved: true
+    html: |
       {% raw %}
-      <b>Status: {{ .Status | ToUpper }}</b>
+      <h3>Alert Status: {{ .Status | ToUpper }}</h3>
       {{ range .Alerts }}
-      <b>Alert:</b> {{ .Annotations.summary }}
-      <b>Description:</b> {{ .Annotations.description }}
-      <b>Severity:</b> {{ .Labels.severity }}
-      <b>Started:</b> {{ .StartsAt.Format "15:04:05" }}
+        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 5px;">
+          <b style="color: #d44939;">Alert:</b> {{ .Annotations.summary }}<br>
+          <b>Description:</b> {{ .Annotations.description }}<br>
+          <b>Severity:</b> {{ .Labels.severity }}<br>
+          <b>Time:</b> {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+        </div>
       {{ end }}
       {% endraw %}
