@@ -88,6 +88,14 @@
     group: "{{ app_user }}"
     mode: '0644'
 
+- name: Render Alertmanager configuration
+  template:
+    src: templates/alertmanager.yml.j2
+    dest: "{{ app_dir }}/alertmanager.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
 - name: Render Grafana datasource provisioning
   template:
     src: templates/grafana/datasources/prometheus.yml.j2
