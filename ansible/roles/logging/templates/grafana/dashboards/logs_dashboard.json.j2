@@ -13,144 +13,950 @@
       }
     ]
   },
+  "description": "Application logs dashboard — ELK Stack (Elasticsearch + Logstash)",
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
   "links": [],
-  "liveNow": false,
+  "liveNow": true,
   "panels": [
+
     {
-      "datasource": {
-        "type": "elasticsearch",
-        "uid": "Elasticsearch"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 1,
-      "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showLabels": false,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": false
-      },
-      "targets": [
-        {
-          "alias": "",
-          "metrics": [
-            {
-              "id": "1",
-              "type": "logs"
-            }
-          ],
-          "query": "",
-          "refId": "A",
-          "timeField": "@timestamp"
-        }
-      ],
-      "title": "Application Logs",
-      "type": "logs"
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "📊 Overview",
+      "type": "row"
     },
+
     {
-      "datasource": {
-        "type": "elasticsearch",
-        "uid": "Elasticsearch"
-      },
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": { "fixedColor": "#73BF69", "mode": "fixed" },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
+              { "color": "#73BF69", "value": null }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 2,
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 10,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["count"],
           "fields": "",
           "values": false
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.3.3",
+      "pluginVersion": "9.0.0",
       "targets": [
         {
-          "alias": "Critical Errors",
-          "bucketAggs": [
-            {
-              "field": "@timestamp",
-              "id": "2",
-              "settings": {
-                "interval": "auto"
-              },
-              "type": "date_histogram"
-            }
-          ],
-          "metrics": [
-            {
-              "id": "1",
-              "type": "count"
-            }
-          ],
-          "query": "syslog_message: *ERROR* OR syslog_message: *CRITICAL*",
+          "alias": "Total Logs",
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "",
           "refId": "A",
           "timeField": "@timestamp"
         }
       ],
-      "title": "Critical Error Count",
+      "title": "Total Logs",
       "type": "stat"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "#F2CC0C", "mode": "fixed" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#F2CC0C", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 11,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["count"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "alias": "Warnings",
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "syslog_message: *WARN* OR syslog_message: *WARNING*",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "⚠️ Warnings",
+      "type": "stat"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "#FF5757", "mode": "fixed" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "#FF5757", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 12,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["count"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "alias": "Errors",
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "syslog_message: *ERROR*",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "🔴 Errors",
+      "type": "stat"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "#C4162A", "mode": "fixed" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "#C4162A", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 13,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["count"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "alias": "Critical",
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "syslog_message: *CRITICAL* OR syslog_message: *FATAL*",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "💀 Critical / Fatal",
+      "type": "stat"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "#5794F2", "mode": "fixed" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#5794F2", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 14,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["count"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "alias": "Info",
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "syslog_message: *INFO*",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "ℹ️ Info",
+      "type": "stat"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "#8AB8FF", "mode": "fixed" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#8AB8FF", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 15,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["uniqueValues"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "alias": "Unique Hosts",
+          "bucketAggs": [
+            {
+              "field": "syslog_hostname.keyword",
+              "id": "2",
+              "settings": { "min_doc_count": "1", "order": "desc", "orderBy": "_count", "size": "500" },
+              "type": "terms"
+            }
+          ],
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "🖥️ Unique Hosts",
+      "type": "stat"
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "📈 Log Volume & Trends",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "normal" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Errors" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#FF5757", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Warnings" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#F2CC0C", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Info" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#5794F2", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Critical" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#C4162A", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 16, "x": 0, "y": 6 },
+      "id": 20,
+      "options": {
+        "legend": { "calcs": ["sum", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "alias": "Info",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "2", "settings": { "interval": "auto", "min_doc_count": "0", "trimEdges": "0" }, "type": "date_histogram" }
+          ],
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "syslog_message: *INFO*",
+          "refId": "A",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "Warnings",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "4", "settings": { "interval": "auto", "min_doc_count": "0", "trimEdges": "0" }, "type": "date_histogram" }
+          ],
+          "metrics": [{ "id": "3", "type": "count" }],
+          "query": "syslog_message: *WARN* OR syslog_message: *WARNING*",
+          "refId": "B",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "Errors",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "6", "settings": { "interval": "auto", "min_doc_count": "0", "trimEdges": "0" }, "type": "date_histogram" }
+          ],
+          "metrics": [{ "id": "5", "type": "count" }],
+          "query": "syslog_message: *ERROR*",
+          "refId": "C",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "Critical",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "8", "settings": { "interval": "auto", "min_doc_count": "0", "trimEdges": "0" }, "type": "date_histogram" }
+          ],
+          "metrics": [{ "id": "7", "type": "count" }],
+          "query": "syslog_message: *CRITICAL* OR syslog_message: *FATAL*",
+          "refId": "D",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Log Volume by Level Over Time",
+      "type": "timeseries"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false }
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "INFO" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#5794F2", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "WARN" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#F2CC0C", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "ERROR" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#FF5757", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CRITICAL" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#C4162A", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 8, "x": 16, "y": 6 },
+      "id": 21,
+      "options": {
+        "displayLabels": ["percent"],
+        "legend": { "displayMode": "table", "placement": "bottom", "values": ["value", "percent"] },
+        "pieType": "donut",
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "alias": "{{terms.syslog_message}}",
+          "bucketAggs": [
+            {
+              "field": "log.level.keyword",
+              "id": "2",
+              "settings": { "min_doc_count": "1", "order": "desc", "orderBy": "_count", "size": "10" },
+              "type": "terms"
+            }
+          ],
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Log Distribution by Level",
+      "type": "piechart"
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 102,
+      "title": "🔴 Errors & Critical Events",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "hue",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineStyle": { "fill": "solid" },
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line+area" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 5 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 30,
+      "options": {
+        "legend": { "calcs": ["sum", "max", "mean"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "alias": "Errors/min",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "2", "settings": { "interval": "1m", "min_doc_count": "0" }, "type": "date_histogram" }
+          ],
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "syslog_message: *ERROR* OR syslog_message: *CRITICAL* OR syslog_message: *FATAL*",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Error Rate (per minute)",
+      "type": "timeseries"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "auto",
+            "displayMode": "color-background-solid",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Host" },
+            "properties": [
+              { "id": "custom.width", "value": 200 },
+              { "id": "custom.displayMode", "value": "auto" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Count" },
+            "properties": [
+              { "id": "custom.width", "value": 120 },
+              { "id": "custom.displayMode", "value": "lcd-gauge" },
+              { "id": "color", "value": { "mode": "thresholds" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 31,
+      "options": {
+        "footer": { "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Count" }]
+      },
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "field": "syslog_hostname.keyword",
+              "id": "2",
+              "settings": { "min_doc_count": "1", "order": "desc", "orderBy": "_count", "size": "10" },
+              "type": "terms"
+            }
+          ],
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "syslog_message: *ERROR* OR syslog_message: *CRITICAL* OR syslog_message: *FATAL*",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Top Error Sources by Host",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "syslog_hostname.keyword": "Host",
+              "Count": "Count"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+      "id": 103,
+      "title": "🖥️ Service Activity",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "align": "auto",
+            "displayMode": "color-background-gradient",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Count" },
+            "properties": [
+              { "id": "custom.width", "value": 120 },
+              { "id": "custom.displayMode", "value": "lcd-gauge" }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 25 },
+      "id": 40,
+      "options": {
+        "footer": { "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Count" }]
+      },
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "field": "syslog_program.keyword",
+              "id": "2",
+              "settings": { "min_doc_count": "1", "order": "desc", "orderBy": "_count", "size": "15" },
+              "type": "terms"
+            }
+          ],
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Top Services / Programs",
+      "type": "table"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "normal" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 25 },
+      "id": 41,
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "right" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "alias": "{{terms.syslog_program.keyword}}",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "3", "settings": { "interval": "auto", "min_doc_count": "0" }, "type": "date_histogram" },
+            {
+              "field": "syslog_program.keyword",
+              "id": "2",
+              "settings": { "min_doc_count": "1", "order": "desc", "orderBy": "_count", "size": "5" },
+              "type": "terms"
+            }
+          ],
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Logs per Service Over Time",
+      "type": "timeseries"
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+      "id": 104,
+      "title": "📋 Live Log Stream",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 34 },
+      "id": 50,
+      "options": {
+        "dedupStrategy": "signature",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "alias": "",
+          "metrics": [{ "id": "1", "type": "logs", "settings": { "limit": "500" } }],
+          "query": "",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "All Application Logs",
+      "type": "logs"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 44 },
+      "id": 51,
+      "options": {
+        "dedupStrategy": "signature",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "alias": "",
+          "metrics": [{ "id": "1", "type": "logs", "settings": { "limit": "200" } }],
+          "query": "syslog_message: *ERROR* OR syslog_message: *CRITICAL* OR syslog_message: *FATAL* OR syslog_message: *WARN*",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "⚠️ Errors & Warnings Stream",
+      "type": "logs"
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 54 },
+      "id": 105,
+      "title": "🌐 Host Activity Heatmap",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "spectrum" },
+          "custom": {
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "scaleDistribution": { "type": "linear" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 55 },
+      "id": 60,
+      "options": {
+        "calculate": false,
+        "cellGap": 2,
+        "color": {
+          "exponent": 0.5,
+          "fill": "#b4ff00",
+          "min": 0,
+          "mode": "spectrum",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Oranges",
+          "steps": 128
+        },
+        "exemplars": { "color": "rgba(255,0,255,0.7)" },
+        "fillValue": 0,
+        "legend": { "show": true },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "show": true, "yHistogram": false },
+        "yAxis": { "axisPlacement": "left", "decimals": 0, "reverse": false, "unit": "short" }
+      },
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "3", "settings": { "interval": "1h", "min_doc_count": "0" }, "type": "date_histogram" },
+            {
+              "field": "syslog_hostname.keyword",
+              "id": "2",
+              "settings": { "min_doc_count": "1", "order": "desc", "orderBy": "_count", "size": "10" },
+              "type": "terms"
+            }
+          ],
+          "metrics": [{ "id": "1", "type": "count" }],
+          "query": "",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "Log Activity Heatmap by Host",
+      "type": "heatmap"
     }
+
   ],
-  "schemaVersion": 34,
+  "refresh": "30s",
+  "schemaVersion": 36,
   "style": "dark",
-  "tags": [],
+  "tags": ["logs", "elk", "syslog", "monitoring"],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {},
+        "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+        "definition": "",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Host",
+        "multi": true,
+        "name": "host",
+        "options": [],
+        "query": {
+          "field": "syslog_hostname.keyword",
+          "query": "",
+          "type": "terms"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
+        "definition": "",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Service",
+        "multi": true,
+        "name": "service",
+        "options": [],
+        "query": {
+          "field": "syslog_program.keyword",
+          "query": "",
+          "type": "terms"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Log Level",
+        "multi": false,
+        "name": "level",
+        "options": [
+          { "selected": true, "text": "All", "value": "$__all" },
+          { "selected": false, "text": "INFO", "value": "INFO" },
+          { "selected": false, "text": "WARN", "value": "WARN" },
+          { "selected": false, "text": "ERROR", "value": "ERROR" },
+          { "selected": false, "text": "CRITICAL", "value": "CRITICAL" },
+          { "selected": false, "text": "FATAL", "value": "FATAL" }
+        ],
+        "query": "INFO,WARN,ERROR,CRITICAL,FATAL",
+        "type": "custom"
+      }
+    ]
   },
-  "time": {
-    "from": "now-6h",
-    "to": "now"
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m"],
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
-  "timepicker": {},
-  "timezone": "",
-  "title": "System Logs Dashboard",
-  "uid": "logs-dash",
-  "version": 1,
+  "timezone": "browser",
+  "title": "📋 Application Logs Dashboard",
+  "uid": "logs-dash-v2",
+  "version": 2,
   "weekStart": ""
 }
 {% endraw %}
