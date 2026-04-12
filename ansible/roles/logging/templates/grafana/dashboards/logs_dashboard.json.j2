@@ -64,6 +64,9 @@
       "targets": [
         {
           "alias": "Total Logs",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "2", "settings": { "interval": "auto", "min_doc_count": "0" }, "type": "date_histogram" }
+          ],
           "metrics": [{ "id": "1", "type": "count" }],
           "query": "",
           "refId": "A",
@@ -98,7 +101,7 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["count"],
+          "calcs": ["sum"],
           "fields": "",
           "values": false
         },
@@ -108,6 +111,9 @@
       "targets": [
         {
           "alias": "Warnings",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "2", "settings": { "interval": "auto", "min_doc_count": "0" }, "type": "date_histogram" }
+          ],
           "metrics": [{ "id": "1", "type": "count" }],
           "query": "syslog_message: *WARN* OR syslog_message: *WARNING*",
           "refId": "A",
@@ -143,7 +149,7 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["count"],
+          "calcs": ["sum"],
           "fields": "",
           "values": false
         },
@@ -153,6 +159,9 @@
       "targets": [
         {
           "alias": "Errors",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "2", "settings": { "interval": "auto", "min_doc_count": "0" }, "type": "date_histogram" }
+          ],
           "metrics": [{ "id": "1", "type": "count" }],
           "query": "syslog_message: *ERROR*",
           "refId": "A",
@@ -188,7 +197,7 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["count"],
+          "calcs": ["sum"],
           "fields": "",
           "values": false
         },
@@ -198,6 +207,9 @@
       "targets": [
         {
           "alias": "Critical",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "2", "settings": { "interval": "auto", "min_doc_count": "0" }, "type": "date_histogram" }
+          ],
           "metrics": [{ "id": "1", "type": "count" }],
           "query": "syslog_message: *CRITICAL* OR syslog_message: *FATAL*",
           "refId": "A",
@@ -232,7 +244,7 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["count"],
+          "calcs": ["sum"],
           "fields": "",
           "values": false
         },
@@ -242,6 +254,9 @@
       "targets": [
         {
           "alias": "Info",
+          "bucketAggs": [
+            { "field": "@timestamp", "id": "2", "settings": { "interval": "auto", "min_doc_count": "0" }, "type": "date_histogram" }
+          ],
           "metrics": [{ "id": "1", "type": "count" }],
           "query": "syslog_message: *INFO*",
           "refId": "A",
@@ -276,7 +291,7 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["uniqueValues"],
+          "calcs": ["count"],
           "fields": "",
           "values": false
         },
