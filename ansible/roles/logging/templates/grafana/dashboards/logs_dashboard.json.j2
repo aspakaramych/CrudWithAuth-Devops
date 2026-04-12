@@ -902,18 +902,14 @@
       {
         "current": {},
         "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
-        "definition": "",
+        "definition": "{\"find\": \"terms\", \"field\": \"syslog_hostname.keyword\"}",
         "hide": 0,
         "includeAll": true,
         "label": "Host",
         "multi": true,
         "name": "host",
         "options": [],
-        "query": {
-          "field": "syslog_hostname.keyword",
-          "query": "",
-          "type": "terms"
-        },
+        "query": "{\"find\": \"terms\", \"field\": \"syslog_hostname.keyword\"}",
         "refresh": 2,
         "regex": "",
         "sort": 1,
@@ -922,18 +918,14 @@
       {
         "current": {},
         "datasource": { "type": "elasticsearch", "uid": "Elasticsearch" },
-        "definition": "",
+        "definition": "{\"find\": \"terms\", \"field\": \"syslog_program.keyword\"}",
         "hide": 0,
         "includeAll": true,
         "label": "Service",
         "multi": true,
         "name": "service",
         "options": [],
-        "query": {
-          "field": "syslog_program.keyword",
-          "query": "",
-          "type": "terms"
-        },
+        "query": "{\"find\": \"terms\", \"field\": \"syslog_program.keyword\"}",
         "refresh": 2,
         "regex": "",
         "sort": 1,
