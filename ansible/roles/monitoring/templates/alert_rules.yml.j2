@@ -3,16 +3,16 @@ groups:
     rules:
       - alert: HighAppLatency
         expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.5
-        for: 2m
+        for: 10s
         labels:
-          severity: warning
+          severity: critical
         annotations:
           summary: "Высокое время ответа приложения"
           description: "95-й процентиль времени ответа приложения выше 0.5 секунды"
 
       - alert: BackupFailed
         expr: backup_success == 0
-        for: 5m
+        for: 10s
         labels:
           severity: critical
         annotations:
@@ -21,9 +21,10 @@ groups:
 
       - alert: RedisDown
         expr: redis_up == 0
-        for: 2m
+        for: 10s
         labels:
           severity: critical
         annotations:
           summary: "Redis недоступен"
           description: "Redis экспортёр перестал отдавать метрики"
+

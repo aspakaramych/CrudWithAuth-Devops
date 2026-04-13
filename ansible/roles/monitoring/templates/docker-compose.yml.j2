@@ -43,6 +43,17 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+
+
   grafana:
     image: grafana/grafana:latest
     restart: unless-stopped
