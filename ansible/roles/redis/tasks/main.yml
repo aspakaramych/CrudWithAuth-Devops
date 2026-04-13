@@ -21,12 +21,11 @@
       After=network.target
 
       [Service]
-      Type=forking
+      Type=simple
       ExecStart=/usr/bin/redis-server /etc/redis/redis_%i.conf
-      PIDFile=/var/run/redis_%i.pid
       Restart=always
-      User=root
-      Group=root
+      User=redis
+      Group=redis
 
       [Install]
       WantedBy=multi-user.target
