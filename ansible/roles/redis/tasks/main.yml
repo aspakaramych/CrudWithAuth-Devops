@@ -5,21 +5,40 @@
     owner: redis
     group: redis
   loop: "{{ redis_ports }}"
-  vars:
-      port: "{{ item }}"
 
 - name: Configure Redis Nodes
   template:
     src: templates/redis.conf.j2
     dest: "/etc/redis/redis_{{ item }}.conf"
   loop: "{{ redis_ports }}"
-  vars:
-      port: "{{ item }}"
-    
-- name: Start Redis instances
-  shell: "redis-server /etc/redis/redis_{{ item }}.conf --daemonize yes"
+
+- name: Create Systemd service template for Redis
+  copy:
+    dest: /etc/systemd/system/redis-node@.service
+    content: |
+      [Unit]
+      Description=Redis Node %i
+      After=network.target
+
+      [Service]
+      Type=forking
+      ExecStart=/usr/bin/redis-server /etc/redis/redis_%i.conf
+      PIDFile=/var/run/redis_%i.pid
+      Restart=always
+      User=root
+      Group=root
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+
+- name: Ensure Redis instances are running
+  systemd:
+    name: "redis-node@{{ item }}"
+    state: started
+    enabled: yes
+    daemon_reload: yes
   loop: "{{ redis_ports }}"
-  changed_when: false
 
 - name: Wait for Redis ports to be ready
   wait_for:
@@ -29,7 +48,7 @@
   loop: "{{ redis_ports }}"
 
 - name: Check Redis Cluster status
-  shell: redis-cli -p 7000 cluster info
+  shell: redis-cli -p 7000 cluster info | grep "cluster_state:ok"
   register: redis_cluster_check
   ignore_errors: yes
   changed_when: false
@@ -37,8 +56,8 @@
 - name: Reset Redis nodes to clean state
   shell: "redis-cli -p {{ item }} flushall && redis-cli -p {{ item }} cluster reset hard"
   loop: "{{ redis_ports }}"
-  changed_when: false
-      
+  when: redis_cluster_check.rc != 0
+  changed_when: true
 
 - name: Create Redis Cluster
   shell: >
@@ -46,6 +65,7 @@
         {% for p in redis_ports %} 127.0.0.1:{{ p }} {% endfor %}
         --cluster-replicas 1 --cluster-yes
   register: cluster_result
+  when: redis_cluster_check.rc != 0
   failed_when: 
       - cluster_result.rc != 0
       - "'already in cluster' not in cluster_result.stderr"
