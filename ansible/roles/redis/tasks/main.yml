@@ -33,7 +33,7 @@
     mode: '0644'
 
 - name: Kill old unmanaged Redis instances (if any)
-  shell: "pkill -f redis_{{ item }}.conf || true"
+  shell: "pkill -f '[r]edis_{{ item }}.conf' || true"
   loop: "{{ redis_ports }}"
   changed_when: false
 
