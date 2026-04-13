@@ -13,3 +13,5 @@ smtp_from: "aspakldjsfjk@yandex.com"
 smtp_auth_username: "aspakldjsfjk@yandex.com"
 smtp_auth_password: "vhernhnlxcjjvhkj"
 email_to: "vgrig2006@gmail.com"
+redis_ports: [7000, 7001, 7002, 7003, 7004, 7005]
+yandex_app_pass: "vhernhnlxcjjvhkj"
