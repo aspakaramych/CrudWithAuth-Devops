@@ -15,12 +15,21 @@
   loop:
     - "{{ app_dir }}/logging"
     - "{{ app_dir }}/logging/logstash"
+    - "{{ app_dir }}/logging/nginx"
     - "{{ app_dir }}/logging/elasticsearch"
 
 - name: Render Logstash configuration
   template:
     src: logstash/logstash.conf.j2
     dest: "{{ app_dir }}/logging/logstash/logstash.conf"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: Render Nginx proxy configuration
+  template:
+    src: nginx/nginx.conf.j2
+    dest: "{{ app_dir }}/logging/nginx/nginx.conf"
     owner: "{{ app_user }}"
     group: "{{ app_user }}"
     mode: '0644'
