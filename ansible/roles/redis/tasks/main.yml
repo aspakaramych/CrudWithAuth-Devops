@@ -32,6 +32,11 @@
       WantedBy=multi-user.target
     mode: '0644'
 
+- name: Kill old unmanaged Redis instances (if any)
+  shell: "pkill -f redis_{{ item }}.conf || true"
+  loop: "{{ redis_ports }}"
+  changed_when: false
+
 - name: Ensure Redis instances are running
   systemd:
     name: "redis-node@{{ item }}"
