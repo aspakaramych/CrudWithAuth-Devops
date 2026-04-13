@@ -120,6 +120,3 @@
     state: present
   notify: restart rsyslog
 
-- name: Configure application to log to syslog (if applicable)
-  debug:
-    msg: "Ensure the application logs are caught by journald/syslog or configured to send to udp://localhost:5140"

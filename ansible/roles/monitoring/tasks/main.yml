@@ -122,37 +122,16 @@
 
 - name: Render Grafana dashboards
   template:
-    src: templates/grafana/dashboards/node_exporter_dashboard.json.j2
-    dest: "{{ app_dir }}/grafana/dashboards/node_exporter_dashboard.json"
+    src: "templates/grafana/dashboards/{{ item }}.json.j2"
+    dest: "{{ app_dir }}/grafana/dashboards/{{ item }}.json"
     owner: "{{ app_user }}"
     group: "{{ app_user }}"
     mode: '0644'
-
-- name: Render Grafana dashboards
-  template:
-    src: templates/grafana/dashboards/postgres_dashboard.json.j2
-    dest: "{{ app_dir }}/grafana/dashboards/postgres_dashboard.json"
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
-    mode: '0644'
-
-- name: Render Grafana dashboards
-  template:
-    src: templates/grafana/dashboards/redis_dashboard.json.j2
-    dest: "{{ app_dir }}/grafana/dashboards/redis_dashboard.json"
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
-    mode: '0644'
-
-- name: Render Grafana dashboards
-  template:
-    src: templates/grafana/dashboards/app_red_metrics.json.j2
-    dest: "{{ app_dir }}/grafana/dashboards/app_red_metrics.json"
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
-    mode: '0644'
-
-
+  loop:
+    - node_exporter_dashboard
+    - postgres_dashboard
+    - redis_dashboard
+    - app_red_metrics
 
 - name: Launch docker-compose stack
   command: docker compose -f "{{ app_dir }}/docker-compose.yml" up -d --build --force-recreate

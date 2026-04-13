@@ -1,15 +1,6 @@
 - name: Deploy CrudWithAuth Stack
   hosts: all
   become: yes
-  vars:
-    app_dir: "/var/www/crudwithauth"
-    app_user: "www-data"
-    dotnet_path: "/usr/bin/dotnet"
-    db_name: "crud_db"
-    db_user: "postgres"
-    db_password: "postgres_password"
-    redis_ports: [7000, 7001, 7002, 7003, 7004, 7005]
-    jwt_secret_key: "VerySecretKeyForJwtAuthentication"
   roles:
     - base
     - postgres

@@ -1,8 +1,8 @@
 - name: Install System Packages
   apt:
-      name: [acl, curl, postgresql, postgresql-contrib, redis-server, python3-psycopg2]
-      state: present
-      update_cache: yes
+    name: [acl, curl, postgresql, postgresql-contrib, redis-server, python3-psycopg2]
+    state: present
+    update_cache: yes
   register: apt_res
   until: apt_res is success
   retries: 5
@@ -14,44 +14,25 @@
   ignore_errors: true
   changed_when: false
 
-- name: Install .NET 9 SDK via Official Script (Reliable Method)
+- name: Install .NET 9 SDK
   shell: |
-        curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
-        ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
+    curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
+    ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
   when: dotnet_check.failed
   args:
-      creates: /usr/bin/dotnet
+    creates: /usr/bin/dotnet
 
 - name: Install rclone
   apt:
-      name: rclone
-      state: present
+    name: rclone
+    state: present
 
 - name: Create rclone config
   shell: |
-        OBSCURED_PASS=$(rclone obscure "{{ yandex_app_pass }}")
-        mkdir -p /root/.config/rclone
-        rclone config create yandex webdav url=https://webdav.yandex.ru vendor=yandex user={{ yandex_user }} pass="$OBSCURED_PASS"
+    OBSCURED_PASS=$(rclone obscure "{{ yandex_app_pass }}")
+    mkdir -p /root/.config/rclone
+    rclone config create yandex webdav url=https://webdav.yandex.ru vendor=yandex user={{ yandex_user }} pass="$OBSCURED_PASS"
   args:
-      creates: /root/.config/rclone/rclone.conf
+    creates: /root/.config/rclone/rclone.conf
 
-- name: Debug Secret Length
-  debug:
-    msg: "Пароль дошел! Длина строки: {{ yandex_app_pass | length }} символов."
-
-- name: Create log directory for the app
-  file:
-      path: /var/log/crudwithauth
-      state: directory
-      owner: "{{ app_user }}"
-      group: "{{ app_user }}"
-      mode: '0755'
-
-- name: Configure logrotate for the app
-  template:
-      src: templates/logrotate.conf.j2
-      dest: /etc/logrotate.d/crudwithauth
-      owner: root
-      group: root
-      mode: '0644'
 
