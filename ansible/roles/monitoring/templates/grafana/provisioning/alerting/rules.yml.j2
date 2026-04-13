@@ -1,0 +1,35 @@
+apiVersion: 1
+groups:
+  - name: AppLogAlerts
+    folder: Application
+    rules:
+      - name: CriticalLogErrors
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: Elasticsearch
+            model:
+              alias: "Critical Errors"
+              bucketAggs:
+                - field: "@timestamp"
+                  id: "2"
+                  settings:
+                    interval: "1m"
+                  type: date_histogram
+              metrics:
+                - id: "1"
+                  type: count
+              query: "syslog_message: *ERROR* OR syslog_message: *CRITICAL* OR syslog_message: *FATAL*"
+              timeField: "@timestamp"
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: "Критические ошибки в логах"
+          description: "Обнаружено более 5 критических ошибок в логах за последние 5 минут"
+        labels:
+          severity: critical
+        isPaused: false

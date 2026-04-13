@@ -15,3 +15,8 @@ smtp_auth_password: "vhernhnlxcjjvhkj"
 email_to: "vgrig2006@gmail.com"
 redis_ports: [7000, 7001, 7002, 7003, 7004, 7005]
 yandex_app_pass: "vhernhnlxcjjvhkj"
+
+# Telegram Notifications (Overridden by GitHub Secrets in CI/CD)
+telegram_token: "REPLACE_ME"
+telegram_chat_id: "0"
+webhook_url: "http://127.0.0.1:9000/alert"

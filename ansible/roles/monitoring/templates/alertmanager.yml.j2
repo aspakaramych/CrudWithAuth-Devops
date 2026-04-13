@@ -11,22 +11,33 @@ route:
   group_wait: 10s
   group_interval: 1m
   repeat_interval: 1h
-  receiver: 'email-only'
+  receiver: 'default-receiver'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'telegram-critical'
 
 receivers:
-- name: 'email-only'
+- name: 'default-receiver'
   email_configs:
   - to: '{{ email_to }}'
     send_resolved: true
-    html: |
+  webhook_configs:
+  - url: '{{ webhook_url }}'
+
+- name: 'telegram-critical'
+  email_configs:
+  - to: '{{ email_to }}'
+  telegram_configs:
+  - bot_token: '{{ telegram_token }}'
+    chat_id: {{ telegram_chat_id }}
+    send_resolved: true
+    parse_mode: 'HTML'
+    message: |
       {% raw %}
-      <h3>Alert Status: {{ .Status | ToUpper }}</h3>
-      {{ range .Alerts }}
-        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 5px;">
-          <b style="color: #d44939;">Alert:</b> {{ .Annotations.summary }}<br>
-          <b>Description:</b> {{ .Annotations.description }}<br>
-          <b>Severity:</b> {{ .Labels.severity }}<br>
-          <b>Time:</b> {{ .StartsAt.Format "2006-01-02 15:04:05" }}
-        </div>
-      {{ end }}
+      <b>Alert:</b> {{ .CommonAnnotations.summary }}
+      <b>Severity:</b> {{ .CommonLabels.severity }}
+      <b>Description:</b> {{ .CommonAnnotations.description }}
+      <b>Status:</b> {{ .Status }}
       {% endraw %}
+

@@ -45,5 +45,9 @@ jobs:
       - name: Run Ansible Playbook
         run: |
           cd ansible
-          ansible-playbook -i "localhost," -c local deploy.yml -e "yandex_app_pass=${{ secrets.YANDEX_PASS }}"
+          ansible-playbook -i "localhost," -c local deploy.yml \
+            -e "yandex_app_pass=${{ secrets.YANDEX_PASS }}" \
+            -e "telegram_token=${{ secrets.TELEGRAM_TOKEN }}" \
+            -e "telegram_chat_id=${{ secrets.TELEGRAM_CHAT_ID }}"
+
         
