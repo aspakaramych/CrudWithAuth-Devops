@@ -113,13 +113,14 @@
     group: "{{ app_user }}"
     mode: '0644'
 
-- name: Render Grafana notifier provisioning
-  template:
-    src: templates/grafana/notifiers/notifiers.yml.j2
-    dest: "{{ app_dir }}/grafana/provisioning/notifiers/notifiers.yml"
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
-    mode: '0644'
+# - name: Render Grafana notifier provisioning
+#   template:
+#     src: templates/grafana/notifiers/notifiers.yml.j2
+#     dest: "{{ app_dir }}/grafana/provisioning/notifiers/notifiers.yml"
+#     owner: "{{ app_user }}"
+#     group: "{{ app_user }}"
+#     mode: '0644'
+
 
 - name: Render Grafana alerting rules provisioning
   template:

@@ -1,9 +1,12 @@
 apiVersion: 1
 groups:
-  - name: AppLogAlerts
+  - orgId: 1
+    name: AppLogAlerts
     folder: Application
+    interval: 1m
     rules:
-      - name: CriticalLogErrors
+      - uid: critical_log_errors_uid
+        title: CriticalLogErrors
         condition: A
         data:
           - refId: A
