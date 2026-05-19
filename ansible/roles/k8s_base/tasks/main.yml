@@ -97,16 +97,11 @@
 
 - name: Configure containerd
   shell: |
+    rm -f /etc/containerd/config.toml
     containerd config default > /etc/containerd/config.toml
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
-  args:
-    creates: /etc/containerd/config.toml.configured
+    sed -i 's/disabled_plugins = \["cri"\]/disabled_plugins = \[\]/g' /etc/containerd/config.toml
   notify: Restart containerd
-
-- name: Mark containerd as configured
-  file:
-    path: /etc/containerd/config.toml.configured
-    state: touch
 
 - name: Enable and start containerd
   systemd:

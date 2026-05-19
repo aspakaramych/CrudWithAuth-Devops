@@ -1,9 +1,11 @@
 ---
 # ── Build on master ──────────────────────────────────────────────────────────
 
-- name: Install docker.io for image build on master
+- name: Install Docker CE for image build on master
   apt:
-    name: docker.io
+    name:
+      - docker-ce
+      - docker-ce-cli
     state: present
     update_cache: yes
 
