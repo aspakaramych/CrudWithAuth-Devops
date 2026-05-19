@@ -1,4 +1,16 @@
 ---
+- name: Remove conflicting docker lists to prevent Signed-By errors
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/apt/sources.list.d/docker.list
+    - /etc/apt/sources.list.d/download_docker_com_linux_ubuntu.list
+    - /etc/apt/sources.list.d/archive_uri-https_download_docker_com_linux_ubuntu-jammy.list
+
+- name: Purge any conflicting Docker APT sources via wildcard
+  shell: rm -f /etc/apt/sources.list.d/*docker*.list
+
 - name: Disable swap
   command: swapoff -a
   when: ansible_swaptotal_mb > 0
@@ -55,14 +67,6 @@
     path: /etc/apt/keyrings
     state: directory
     mode: '0755'
-
-- name: Remove conflicting docker lists to prevent Signed-By errors
-  file:
-    path: "{{ item }}"
-    state: absent
-  with_items:
-    - /etc/apt/sources.list.d/docker.list
-    - /etc/apt/sources.list.d/download_docker_com_linux_ubuntu.list
 
 - name: Download Docker GPG key
   get_url:
