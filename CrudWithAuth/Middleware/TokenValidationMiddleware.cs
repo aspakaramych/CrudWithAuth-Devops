@@ -14,7 +14,8 @@ public class TokenValidationMiddleware
         "/api/auth/register",
         "/openapi/v1.json",
         "/scalar",
-        "/metrics"
+        "/metrics",
+        "/health"
     };
 
     public TokenValidationMiddleware(RequestDelegate next, ILogger<TokenValidationMiddleware> logger)
