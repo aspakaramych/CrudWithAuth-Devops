@@ -1,0 +1,68 @@
+---
+- name: Check if cluster is already initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeadm_init_stat
+
+- name: Initialize Kubernetes cluster
+  command: >
+    kubeadm init
+    --pod-network-cidr=10.244.0.0/16
+    --apiserver-advertise-address={{ ansible_default_ipv4.address }}
+    --node-name={{ inventory_hostname }}
+  when: not kubeadm_init_stat.stat.exists
+  register: kubeadm_init
+
+- name: Wait for API server to be ready
+  wait_for:
+    host: "{{ ansible_default_ipv4.address }}"
+    port: 6443
+    delay: 10
+    timeout: 120
+  when: not kubeadm_init_stat.stat.exists
+
+- name: Create .kube directory
+  file:
+    path: "/root/.kube"
+    state: directory
+    mode: '0755'
+
+- name: Copy kubeconfig to root home
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/root/.kube/config"
+    remote_src: yes
+    mode: '0600'
+
+- name: Wait for node to be registered
+  command: kubectl get nodes {{ inventory_hostname }}
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  register: node_check
+  retries: 12
+  delay: 10
+  until: node_check.rc == 0
+  when: not kubeadm_init_stat.stat.exists
+
+- name: Check if Flannel is already installed
+  command: kubectl get daemonset -n kube-flannel kube-flannel-ds
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  register: flannel_check
+  failed_when: false
+  changed_when: false
+
+- name: Install Flannel network plugin
+  command: kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  when: flannel_check.rc != 0
+
+- name: Generate join command
+  command: kubeadm token create --print-join-command
+  register: join_command
+  changed_when: false
+
+- name: Set join command fact
+  set_fact:
+    kubernetes_join_command: "{{ join_command.stdout }}"

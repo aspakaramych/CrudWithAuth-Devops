@@ -1,0 +1,116 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+  workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: 'Choose Deployment Target'
+        required: true
+        default: 'k8s'
+        type: choice
+        options:
+          - 'k8s'
+          - 'vm'
+          - 'local'
+          - 'none'
+      vm_inventory:
+        description: 'Path to VM Inventory File (if VM target selected)'
+        required: false
+        default: 'ansible/local_inventory.ini'
+        type: string
+
+jobs:
+  # =========================================================================
+  # CI JOB: Build & Test (Runs on GitHub-Hosted Runner for speed & isolation)
+  # =========================================================================
+  build-and-test:
+    name: 🧪 Build & Test (.NET 8)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore Dependencies
+        run: dotnet restore CrudWithAuth.sln
+
+      - name: Build Application
+        run: dotnet build CrudWithAuth.sln --configuration Release --no-restore
+
+      - name: Run Unit & Integration Tests
+        run: dotnet test CrudWithAuth.sln --configuration Release --no-build --verbosity normal
+
+  # =========================================================================
+  # CD JOB: Deploy via Ansible (Runs on Self-Hosted Runner inside your network)
+  # =========================================================================
+  deploy:
+    name: 🚀 Deploy Application
+    needs: build-and-test
+    runs-on: self-hosted
+    # Only run deploy on pushes to main/master, or manual dispatch
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deployment_target != 'none')
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Verify Ansible Environment
+        run: |
+          echo "Checking Ansible installation..."
+          ansible --version
+          ansible-playbook --version
+
+      - name: Run Ansible Syntax Validation
+        run: |
+          echo "Validating playbooks syntax..."
+          ansible-playbook ansible/k8s_deploy.yml -i ansible/k8s_inventory.ini --syntax-check
+          ansible-playbook ansible/deploy.yml --syntax-check
+
+      # --- Case A: Automatic deployment on Push to main/master (Defaults to Kubernetes cluster) ---
+      - name: Automatic Deployment to Kubernetes Cluster (Push trigger)
+        if: github.event_name == 'push'
+        run: |
+          echo "Triggered by push to main/master. Deploying to Kubernetes cluster..."
+          chmod +x ./deploy.sh
+          ./deploy.sh --k8s
+
+      # --- Case B: Manual Deployment (Workflow Dispatch triggers) ---
+      - name: Manual Deployment - Kubernetes Cluster
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.deployment_target == 'k8s'
+        run: |
+          echo "Manual trigger: Deploying to Kubernetes cluster..."
+          chmod +x ./deploy.sh
+          ./deploy.sh --k8s
+
+      - name: Manual Deployment - Standard VM Stack
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.deployment_target == 'vm'
+        run: |
+          echo "Manual trigger: Deploying to Standard VM Stack using inventory: ${{ github.event.inputs.vm_inventory }}"
+          chmod +x ./deploy.sh
+          ./deploy.sh --vm "${{ github.event.inputs.vm_inventory }}"
+
+      - name: Manual Deployment - Local Server
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.deployment_target == 'local'
+        run: |
+          echo "Manual trigger: Deploying Standard VM Stack locally..."
+          chmod +x ./deploy.sh
+          ./deploy.sh --local

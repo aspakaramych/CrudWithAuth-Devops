@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CrudWithAuth.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c426250dd16bb6698375e95241fe6cadc4644b62")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a058ff118d5c9e3a6366e62daca4e3a0b255886b")]
 [assembly: System.Reflection.AssemblyProductAttribute("CrudWithAuth.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CrudWithAuth.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

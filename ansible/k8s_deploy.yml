@@ -1,0 +1,28 @@
+---
+- name: Prepare all nodes
+  hosts: k8s_cluster
+  become: yes
+  gather_facts: yes
+  roles:
+    - k8s_base
+
+- name: Setup master node
+  hosts: masters
+  become: yes
+  gather_facts: yes
+  roles:
+    - k8s_master
+
+- name: Setup worker nodes
+  hosts: workers
+  become: yes
+  gather_facts: yes
+  roles:
+    - k8s_worker
+
+- name: Deploy application to cluster
+  hosts: masters
+  become: yes
+  gather_facts: yes
+  roles:
+    - k8s_app

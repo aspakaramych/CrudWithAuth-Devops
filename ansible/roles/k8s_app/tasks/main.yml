@@ -1,0 +1,112 @@
+---
+# ── Build on master ──────────────────────────────────────────────────────────
+
+- name: Install docker.io for image build on master
+  apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Start and enable docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Copy source code to master
+  copy:
+    src: "{{ playbook_dir }}/../"
+    dest: /opt/crudwithauth_src/
+    mode: preserve
+
+- name: Build app Docker image
+  command: docker build -t crudwithauth:latest /opt/crudwithauth_src/
+  changed_when: true
+
+- name: Save image to tar archive
+  command: docker save -o /tmp/crudwithauth.tar crudwithauth:latest
+  args:
+    creates: /tmp/crudwithauth.tar
+
+# ── Import image into containerd on master ────────────────────────────────────
+
+- name: Import image into containerd (master)
+  command: ctr -n k8s.io images import /tmp/crudwithauth.tar
+  changed_when: true
+
+# ── Distribute image to each worker ──────────────────────────────────────────
+
+- name: Fetch image tar from master to Ansible controller
+  fetch:
+    src: /tmp/crudwithauth.tar
+    dest: /tmp/crudwithauth.tar
+    flat: yes
+  become: no
+
+- name: Push image tar to each worker node
+  copy:
+    src: /tmp/crudwithauth.tar
+    dest: /tmp/crudwithauth.tar
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['workers'] }}"
+
+- name: Import image into containerd on each worker
+  command: ctr -n k8s.io images import /tmp/crudwithauth.tar
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['workers'] }}"
+  changed_when: true
+
+- name: Clean up temporary tarball on controller
+  file:
+    path: /tmp/crudwithauth.tar
+    state: absent
+  delegate_to: localhost
+  run_once: true
+  become: no
+
+# ── Deploy Kubernetes manifests ───────────────────────────────────────────────
+
+- name: Create manifests directory on master
+  file:
+    path: /opt/k8s-manifests
+    state: directory
+    mode: '0755'
+
+- name: Render Kubernetes manifests from templates
+  template:
+    src: "{{ item }}.yml"
+    dest: "/opt/k8s-manifests/{{ item }}.yml"
+    mode: '0644'
+  with_items:
+    - postgres
+    - redis
+    - app
+
+- name: Apply Kubernetes manifests
+  command: kubectl apply -f /opt/k8s-manifests/{{ item }}.yml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  with_items:
+    - postgres
+    - redis
+    - app
+  register: kubectl_apply
+  changed_when: "'configured' in kubectl_apply.stdout or 'created' in kubectl_apply.stdout"
+
+- name: Wait for postgres deployment to be ready
+  command: >
+    kubectl rollout status deployment/postgres
+    --timeout=120s
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  retries: 3
+  delay: 10
+
+- name: Wait for application deployment to be ready
+  command: >
+    kubectl rollout status deployment/crudwithauth
+    --timeout=180s
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  retries: 3
+  delay: 10
