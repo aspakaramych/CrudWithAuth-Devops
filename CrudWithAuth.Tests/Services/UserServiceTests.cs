@@ -4,6 +4,7 @@ using CrudWithAuth.Exceptions;
 using CrudWithAuth.Repository;
 using CrudWithAuth.Services;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,7 +18,7 @@ public class UserServiceTests
     public UserServiceTests()
     {
         _userRepositoryMock = new Mock<IUserRepository>();
-        _userService = new UserServices(_userRepositoryMock.Object);
+        _userService = new UserServices(_userRepositoryMock.Object, new Mock<ILogger<UserServices>>().Object);
     }
 
     [Fact]

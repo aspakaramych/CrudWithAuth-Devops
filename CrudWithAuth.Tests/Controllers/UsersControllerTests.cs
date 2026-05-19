@@ -4,6 +4,7 @@ using CrudWithAuth.Exceptions;
 using CrudWithAuth.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,7 +18,7 @@ public class UsersControllerTests
     public UsersControllerTests()
     {
         _userServiceMock = new Mock<IUserService>();
-        _controller = new UsersController(_userServiceMock.Object);
+        _controller = new UsersController(_userServiceMock.Object, new Mock<ILogger<UsersController>>().Object);
     }
 
     [Fact]

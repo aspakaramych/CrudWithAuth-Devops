@@ -6,6 +6,7 @@ using CrudWithAuth.Repository;
 using CrudWithAuth.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -45,7 +46,8 @@ public class AuthServiceTests
             _userRepositoryMock.Object,
             _tokenBlacklistServiceMock.Object,
             _jwtService,
-            configuration);
+            configuration,
+            new Mock<ILogger<AuthService>>().Object);
     }
 
     [Fact]

@@ -5,6 +5,7 @@ using CrudWithAuth.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -18,7 +19,7 @@ public class AuthControllerTests
     public AuthControllerTests()
     {
         _authServiceMock = new Mock<IAuthService>();
-        _controller = new AuthController(_authServiceMock.Object);
+        _controller = new AuthController(_authServiceMock.Object, new Mock<ILogger<AuthController>>().Object);
     }
 
     [Fact]

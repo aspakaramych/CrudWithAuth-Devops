@@ -1,5 +1,6 @@
 using CrudWithAuth.Services;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using StackExchange.Redis;
 using Xunit;
@@ -21,7 +22,7 @@ public class TokenBlacklistServiceTests
             .Setup(x => x.GetDatabase(It.IsAny<int>(), It.IsAny<object>()))
             .Returns(_dbMock.Object);
 
-        _service = new TokenBlacklistService(_multiplexerMock.Object);
+        _service = new TokenBlacklistService(_multiplexerMock.Object, new Mock<ILogger<TokenBlacklistService>>().Object);
     }
 
     [Fact]
